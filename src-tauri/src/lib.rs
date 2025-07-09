@@ -24,6 +24,11 @@ async fn toggle_gpio_23(_: AppHandle) {
     print!("GPIO Pin 23 toggle");
 }
 
+#[tauri::command]
+async fn exit(app: AppHandle) {
+    app.exit(0);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -45,7 +50,7 @@ pub fn run() {
             let _ = app.handle(); // suppress unused warning
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![toggle_gpio_23])
+        .invoke_handler(tauri::generate_handler![toggle_gpio_23, exit])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -4,11 +4,15 @@
     async function toggleGpio23(event: Event) {
         await invoke("toggle_gpio_23");
     }
+    async function exit() {
+        await invoke("exit");
+    }
 </script>
 
 <main>
     <h1>Welcome to Tauri + Svelte</h1>
     <button class="button" onclick={toggleGpio23}>Toggle GPIO 23</button>
+    <button class="button" onclick={exit}>Exit</button>
 </main>
 
 <style>
