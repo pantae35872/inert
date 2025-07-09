@@ -6,18 +6,12 @@
     }
 </script>
 
-<main class="container">
+<main>
     <h1>Welcome to Tauri + Svelte</h1>
     <button class="button" onclick={toggleGpio23}>Toggle GPIO 23</button>
 </main>
 
 <style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-    }
-
     :root {
         --fg-color-dark: rgba(255, 255, 255, 0.87);
         --fg-color-2-dark: rgba(200, 200, 200, 1);
