@@ -13,6 +13,7 @@
 
 <main class="container">
     <h1>Inventory</h1>
+
     <div class="items-container">
         <Item item_name="Resistor" item_amount={20} />
         <Item item_name="Motor" item_amount={20} />
@@ -57,12 +58,11 @@
 
     .items-container {
         display: flex;
-        gap: 1em;
         flex-wrap: wrap;
+        gap: 1em;
 
-        align-items: center;
-        justify-content: start;
-
-        max-width: 95%;
+        justify-content: center;
+        max-width: max-content;
+        margin: 0 auto;
     }
 </style>
