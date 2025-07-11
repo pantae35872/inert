@@ -20,8 +20,8 @@
         align-items: center;
         position: relative;
 
-        min-width: 15vh;
-        min-height: 12vh;
+        min-width: 10em;
+        min-height: 8em;
         background-color: var(--bg-color-3);
         padding: 10px;
         border: 1px solid var(--bg-color-2);
