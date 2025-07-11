@@ -1,21 +1,21 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api/core";
+    import { openPopup } from "./+page.svelte";
 
-    let {
-        item_name,
-        item_amount,
-    }: { item_name?: string; item_amount?: number } = $props();
-
-    async function request() {
-        await invoke("request_item");
-    }
+    let { item_name, item_amount }: { item_name: string; item_amount: number } =
+        $props();
 </script>
 
 <div class="item-container">
     <span class="item-info">{item_name}</span>
-    <button class="button" onclick={request}>Request</button>
+    <button class="button">Request</button>
 
     <div class="item-amount">has {item_amount} left</div>
+
+    {#snippet popup()}
+        <h1>Hello from item popup</h1>
+    {/snippet}
+
+    <button class="button" onclick={() => openPopup(popup)}>OpenPopup</button>
 </div>
 
 <style>
