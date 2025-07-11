@@ -25,6 +25,23 @@ async fn toggle_gpio_23(_: AppHandle) {
 }
 
 #[tauri::command]
+async fn request_item(app: AppHandle) {
+    tauri::WebviewWindowBuilder::new(
+        &app,
+        "request-item",
+        tauri::WebviewUrl::App("/request_item".into()),
+    )
+    .title("Request Item")
+    .resizable(false)
+    .inner_size(400.0, 200.0)
+    .always_on_top(true)
+    .decorations(false)
+    .center()
+    .build()
+    .unwrap();
+}
+
+#[tauri::command]
 async fn exit(app: AppHandle) {
     app.exit(0);
 }
@@ -50,7 +67,7 @@ pub fn run() {
             let _ = app.handle(); // suppress unused warning
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![toggle_gpio_23, exit])
+        .invoke_handler(tauri::generate_handler![toggle_gpio_23, exit, request_item])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

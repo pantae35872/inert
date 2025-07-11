@@ -1,13 +1,19 @@
 <script lang="ts">
+    import { invoke } from "@tauri-apps/api/core";
+
     let {
         item_name,
         item_amount,
     }: { item_name?: string; item_amount?: number } = $props();
+
+    async function request() {
+        await invoke("request_item");
+    }
 </script>
 
 <div class="item-container">
     <span class="item-info">{item_name}</span>
-    <button class="button">Request</button>
+    <button class="button" onclick={request}>Request</button>
 
     <div class="item-amount">has {item_amount} left</div>
 </div>
