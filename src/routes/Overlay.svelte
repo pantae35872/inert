@@ -1,16 +1,15 @@
 <script lang="ts">
-    import type { Component, Snippet } from "svelte";
-    import { stopPropagation } from "svelte/legacy";
+    import type { Snippet } from "svelte";
 
     let {
-        open,
+        open = $bindable(),
         onClose,
         children,
-    }: { open: boolean; onClose: () => void; children: Snippet } = $props();
+    }: { open: boolean; onClose?: () => void; children: Snippet } = $props();
 
     function closeHandler() {
         open = false;
-        onClose();
+        onClose?.();
     }
 </script>
 

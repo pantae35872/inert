@@ -22,9 +22,10 @@
 </script>
 
 <main class="container">
-    <Overlay open={isPopUpOpen} onClose={() => {}}>
+    <Overlay bind:open={isPopUpOpen}>
         {@render popUpSnippet?.()}
     </Overlay>
+
     <h1>Inventory</h1>
 
     <div class="items-container">
