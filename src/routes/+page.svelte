@@ -63,6 +63,6 @@
         align-items: center;
         justify-content: start;
 
-        max-width: 80%;
+        max-width: 95%;
     }
 </style>
