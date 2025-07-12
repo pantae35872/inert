@@ -1,14 +1,13 @@
 <script lang="ts">
     import { slide } from "svelte/transition";
     import { openPopup } from "./+page.svelte";
-    import { cubicOut } from "svelte/easing";
-    import { flip } from "svelte/animate";
 
     let { item_name, item_amount }: { item_name: string; item_amount: number } =
         $props();
 
     let amount: string = $state("");
     let numpadOn: boolean = $state(false);
+    let left_amount = $derived(item_amount - Number(amount));
 
     function appendNumber(n: number) {
         amount += n;
@@ -33,10 +32,9 @@
         <div class="item-request-popup">
             <form class="item-request-form" onsubmit={() => {}}>
                 <h2 class="item-header">Request Item: {item_name}</h2>
-
                 <div class="image-wrapper">
                     <img
-                        src="https://www.w3schools.com/css/paris.jpg"
+                        src="https://t3.ftcdn.net/jpg/00/77/77/16/360_F_77771611_BCUZR6NW73NVdiLgmOeIzzSh4RP2U3aV.jpg"
                         alt={item_name}
                     />
                 </div>
@@ -50,6 +48,12 @@
                     required
                     readonly
                 />
+                <h1
+                    class="item-amount-popup"
+                    style="color: {left_amount < 0 ? 'red' : 'inherit'};"
+                >
+                    {left_amount} left
+                </h1>
                 <button class="button item-button" type="submit"
                     >Confirm Request</button
                 >
@@ -90,8 +94,18 @@
 
 <div class="item-container">
     <span class="item-info">{item_name}</span>
-    <button class="button" onclick={() => openPopup(requestPopUp)}
-        >Request</button
+
+    <div class="image-wrapper">
+        <img
+            src="https://t3.ftcdn.net/jpg/00/77/77/16/360_F_77771611_BCUZR6NW73NVdiLgmOeIzzSh4RP2U3aV.jpg"
+            alt={item_name}
+        />
+    </div>
+
+    <button
+        style="margin-bottom: 1em;"
+        class="button"
+        onclick={() => openPopup(requestPopUp)}>Request</button
     >
 
     <div class="item-amount">has {item_amount} left</div>
@@ -105,8 +119,8 @@
         align-items: center;
         position: relative;
 
-        min-width: 10em;
-        min-height: 8em;
+        max-width: 18rem;
+        max-height: 18rem;
         background-color: var(--bg-color-3);
         padding: 10px;
         border: 1px solid var(--bg-color-2);
@@ -174,7 +188,7 @@
         text-align: center;
         font-size: 1.37rem;
         font-weight: 600;
-        margin-bottom: 1.87rem;
+        margin: 0;
     }
 
     .item-amount-input {
@@ -246,5 +260,12 @@
 
     .numpad-row button:hover {
         background-color: var(--bg-color-3, #ccc);
+    }
+
+    .item-amount-popup {
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
     }
 </style>
