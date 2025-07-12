@@ -2,6 +2,7 @@
     import { slide } from "svelte/transition";
     import { openPopup } from "./+page.svelte";
     import { cubicOut } from "svelte/easing";
+    import { flip } from "svelte/animate";
 
     let { item_name, item_amount }: { item_name: string; item_amount: number } =
         $props();
@@ -26,7 +27,7 @@
     <div
         class="request-wrapper"
         transition:slide={{
-            duration: 200,
+            duration: 400,
         }}
     >
         <div class="item-request-popup">
