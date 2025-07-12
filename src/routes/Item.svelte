@@ -9,10 +9,14 @@
     <div class="item-request-popup">
         <form class="item-request-form" onsubmit={() => {}}>
             <h2 class="item-header">Request Item: {item_name}</h2>
-            <img
-                src="https://www.w3schools.com/css/paris.jpg"
-                alt={item_name}
-            />
+
+            <div class="image-wrapper">
+                <img
+                    src="https://www.w3schools.com/css/paris.jpg"
+                    alt={item_name}
+                />
+            </div>
+
             <input
                 class="item-amount-input"
                 placeholder="Amount"
@@ -64,20 +68,31 @@
     }
 
     .item-request-popup {
-        min-height: 18em;
-        min-width: 18em;
+        min-height: 18rem;
+        min-width: 18rem;
+
+        max-width: 30rem;
+        max-height: 20rem;
 
         background-color: var(--bg-color-3);
         padding: 10px;
         border: 1px solid var(--bg-color-2);
         border-radius: 0.5rem;
         box-shadow: 0 2px 2px var(--bg-color-2);
+
+        display: flex;
+        flex-direction: column;
+        overflow: auto; /* Prevent child overflow */
+
+        height: 100%;
     }
 
     .item-request-form {
         display: flex;
         flex-direction: column;
-        gap: 0.8em;
+        gap: 0.8rem;
+
+        max-height: 100%; /* Don't exceed popup height */
     }
 
     .item-header {
@@ -105,10 +120,17 @@
         color: var(--fg-color);
     }
 
-    img {
-        flex: 1;
-        width: 100%;
-        object-fit: cover;
+    .image-wrapper {
+        flex: 1 1 auto;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .image-wrapper img {
+        max-width: 100%;
         max-height: 100%;
+        object-fit: contain;
     }
 </style>
