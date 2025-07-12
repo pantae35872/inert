@@ -102,8 +102,10 @@
         />
     </div>
 
-    <button class="button" onclick={() => openPopup(requestPopUp)}
-        >Request</button
+    <button
+        class="button"
+        style="margin-bottom: 2rem;"
+        onclick={() => openPopup(requestPopUp)}>Request</button
     >
 
     <div class="item-amount">has {item_amount} left</div>
@@ -118,7 +120,7 @@
         position: relative;
 
         max-width: 18rem;
-        max-height: 18rem;
+        max-height: 20rem;
         background-color: var(--bg-color-3);
         padding: 10px;
         border: 1px solid var(--bg-color-2);
@@ -133,7 +135,6 @@
 
     .item-amount {
         position: absolute;
-        margin-top: 1rem;
         right: 0.4rem;
         bottom: 0.2rem;
     }
