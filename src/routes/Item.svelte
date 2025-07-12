@@ -5,17 +5,34 @@
         $props();
 </script>
 
+{#snippet requestPopUp()}
+    <div class="item-request-popup">
+        <form class="item-request-form" onsubmit={() => {}}>
+            <h2 class="item-header">Request Item: {item_name}</h2>
+            <img
+                src="https://www.w3schools.com/css/paris.jpg"
+                alt={item_name}
+            />
+            <input
+                class="item-amount-input"
+                placeholder="Amount"
+                type="text"
+                required
+            />
+            <button class="button item-button" type="submit"
+                >Confirm Request</button
+            >
+        </form>
+    </div>
+{/snippet}
+
 <div class="item-container">
     <span class="item-info">{item_name}</span>
-    <button class="button">Request</button>
+    <button class="button" onclick={() => openPopup(requestPopUp)}
+        >Request</button
+    >
 
     <div class="item-amount">has {item_amount} left</div>
-
-    {#snippet popup()}
-        <h1>Hello from item popup</h1>
-    {/snippet}
-
-    <button class="button" onclick={() => openPopup(popup)}>OpenPopup</button>
 </div>
 
 <style>
@@ -44,5 +61,54 @@
         position: absolute;
         right: 0.4em;
         bottom: 0.2em;
+    }
+
+    .item-request-popup {
+        min-height: 18em;
+        min-width: 18em;
+
+        background-color: var(--bg-color-3);
+        padding: 10px;
+        border: 1px solid var(--bg-color-2);
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 2px var(--bg-color-2);
+    }
+
+    .item-request-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8em;
+    }
+
+    .item-header {
+        text-align: center;
+        font-size: 1.37rem;
+        font-weight: 600;
+        margin-bottom: 1.87rem;
+    }
+
+    .item-amount-input {
+        outline: none;
+        border-radius: 0.31rem;
+        border: 2px solid var(--bg-color-2);
+        background-color: var(--bg-color);
+        color: var(--fg-color-2);
+        padding: 0 1.25rem 0 3.12rem;
+        font-size: 1.06rem;
+        transition: 0.2s ease;
+
+        padding: 0.5rem;
+        margin: 0.1rem;
+    }
+
+    .item-amount-input::placeholder {
+        color: var(--fg-color);
+    }
+
+    img {
+        flex: 1;
+        width: 100%;
+        object-fit: cover;
+        max-height: 100%;
     }
 </style>

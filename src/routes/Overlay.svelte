@@ -26,7 +26,7 @@
             role="button"
             tabindex="0"
             onkeydown={(_e) => {}}
-            onclick={(event) => event.stopPropagation()}
+            onclick={(event: Event) => event.stopPropagation()}
         >
             {@render children?.()}
         </div>
@@ -41,10 +41,10 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 998;
+        z-index: 999;
     }
 
     .children-wrapper {
-        z-index: 999;
+        display: contents;
     }
 </style>
