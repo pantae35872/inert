@@ -102,10 +102,8 @@
         />
     </div>
 
-    <button
-        style="margin-bottom: 1em;"
-        class="button"
-        onclick={() => openPopup(requestPopUp)}>Request</button
+    <button class="button" onclick={() => openPopup(requestPopUp)}
+        >Request</button
     >
 
     <div class="item-amount">has {item_amount} left</div>
@@ -135,8 +133,9 @@
 
     .item-amount {
         position: absolute;
-        right: 0.4em;
-        bottom: 0.2em;
+        margin-top: 1rem;
+        right: 0.4rem;
+        bottom: 0.2rem;
     }
 
     .item-request-popup,
@@ -152,7 +151,7 @@
         min-height: 18rem;
         min-width: 18rem;
 
-        max-width: 30rem;
+        max-width: 20rem;
         max-height: 20rem;
 
         display: flex;

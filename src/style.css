@@ -7,8 +7,8 @@
     --bg-color-4: #161616;
 
     font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 1.2vw;
+    line-height: 2.4vw;
     font-weight: 400;
 
     color: var(--fg-color-2);

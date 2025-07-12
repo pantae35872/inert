@@ -13,7 +13,7 @@
     }
 </script>
 
-<main class="container">
+<main class="container no-select">
     <Overlay bind:open={isPopUpOpen}>
         {@render popUpSnippet?.()}
     </Overlay>
