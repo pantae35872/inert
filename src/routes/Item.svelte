@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { slide } from "svelte/transition";
+    import { blur, fade, scale, slide } from "svelte/transition";
     import { openPopup } from "./+page.svelte";
 
     let { item_name, item_amount }: { item_name: string; item_amount: number } =
@@ -25,8 +25,8 @@
 {#snippet requestPopUp()}
     <div
         class="request-wrapper"
-        transition:slide={{
-            duration: 400,
+        transition:scale={{
+            duration: 200,
         }}
     >
         <div class="item-request-popup">
@@ -63,7 +63,7 @@
         {#if numpadOn}
             <div
                 class="numpad"
-                transition:slide={{
+                transition:scale={{
                     duration: 200,
                 }}
             >
