@@ -15,8 +15,8 @@ name = "inert_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
-default = ["rpi"]
-rpi = []
+default = []
+rpi = ["rppal"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -26,7 +26,7 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-rppal = "0.22.1"
+rppal = { version = "0.22.1", optional = true }
 tokio = { version = "1.44.2", features = ["sync", "time"] }
 tauri-plugin-dialog = "2"
 thiserror = "2.0.12"
