@@ -3,6 +3,7 @@
     import "../style.css";
     import Overlay from "./Overlay.svelte";
     import type { Snippet } from "svelte";
+    import { invoke } from "@tauri-apps/api/core";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let isPopUpOpen: boolean = $state(false);
@@ -11,47 +12,31 @@
         popUpSnippet = snippet;
         isPopUpOpen = true;
     }
+
+    async function exit() {
+        await invoke("exit");
+    }
 </script>
 
 <main class="container no-select">
     <Overlay bind:open={isPopUpOpen}>
         {@render popUpSnippet?.()}
     </Overlay>
-
-    <h1>Inventory</h1>
-
+    <div
+        style="display: flex; align-items: center; text-align: center; justify-content: space-between; width: 100%;"
+    >
+        <div></div>
+        <h1 style="text-align: center;">Inventory</h1>
+        <button class="button" onclick={exit}>Exit</button>
+    </div>
     <div class="items-container">
-        <Item item_name="Resistor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
-        <Item item_name="Motor" item_amount={20} />
+        {#each Array(100) as _}
+            <Item
+                image_source="https://t3.ftcdn.net/jpg/00/77/77/16/360_F_77771611_BCUZR6NW73NVdiLgmOeIzzSh4RP2U3aV.jpg"
+                item_name="Resistor"
+                item_amount={20}
+            />
+        {/each}
     </div>
 </main>
 
@@ -60,17 +45,19 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-end;
         gap: 1em;
+        margin-right: 1rem;
+        margin-left: 1rem;
     }
 
     .items-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 1em;
+        gap: 1rem;
 
         justify-content: center;
-        max-width: max-content;
-        margin: 0 auto;
+        width: 100%;
+        max-width: 100%;
     }
 </style>

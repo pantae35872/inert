@@ -1,8 +1,12 @@
 <script lang="ts">
-    import { blur, fade, scale, slide } from "svelte/transition";
+    import { scale } from "svelte/transition";
     import { openPopup } from "./+page.svelte";
 
-    let { item_name, item_amount }: { item_name: string; item_amount: number } =
+    let {
+        item_name,
+        item_amount,
+        image_source,
+    }: { item_name: string; item_amount: number; image_source: string } =
         $props();
 
     let amount: string = $state("");
@@ -33,10 +37,7 @@
             <form class="item-request-form" onsubmit={() => {}}>
                 <h2 class="item-header">Request Item: {item_name}</h2>
                 <div class="image-wrapper">
-                    <img
-                        src="https://t3.ftcdn.net/jpg/00/77/77/16/360_F_77771611_BCUZR6NW73NVdiLgmOeIzzSh4RP2U3aV.jpg"
-                        alt={item_name}
-                    />
+                    <img src={image_source} alt={item_name} />
                 </div>
 
                 <input
@@ -96,10 +97,7 @@
     <span class="item-info">{item_name}</span>
 
     <div class="image-wrapper">
-        <img
-            src="https://t3.ftcdn.net/jpg/00/77/77/16/360_F_77771611_BCUZR6NW73NVdiLgmOeIzzSh4RP2U3aV.jpg"
-            alt={item_name}
-        />
+        <img src={image_source} alt={item_name} />
     </div>
 
     <button
@@ -119,13 +117,14 @@
         align-items: center;
         position: relative;
 
-        max-width: 18rem;
-        max-height: 20rem;
         background-color: var(--bg-color-3);
         padding: 10px;
         border: 1px solid var(--bg-color-2);
         border-radius: 0.5rem;
         box-shadow: 0 5px 5px var(--bg-color-2);
+
+        width: 30%;
+        height: 30%;
     }
 
     .item-info {
