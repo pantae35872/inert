@@ -57,5 +57,10 @@
         justify-content: center;
         width: 100%;
         max-width: 100%;
+
+        scroll-behavior: smooth;
+        overflow-y: auto;
+
+        -webkit-overflow-scrolling: touch;
     }
 </style>
