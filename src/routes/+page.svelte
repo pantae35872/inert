@@ -45,10 +45,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: center;
         gap: 1em;
-        margin-right: 1rem;
-        margin-left: 1rem;
     }
 
     .items-container {
