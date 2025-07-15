@@ -1,32 +1,24 @@
 use tauri::AppHandle;
 
 #[cfg(feature = "rpi")]
-mod rpi {
-    use std::time::Duration;
+pub mod drv8825;
 
-    use rppal::gpio::{Gpio, Level, OutputPin};
-    use tokio::{sync::Mutex, time::sleep};
+#[cfg(feature = "rpi")]
+mod rpi {
+
+    use rppal::gpio::Gpio;
+    use tokio::sync::{Mutex, MutexGuard};
+
+    use crate::drv8825::{Drv8825Motor, MicroStepMode};
 
     const STEP_PIN: u8 = 23;
     const DIR_PIN: u8 = 24;
-
-    pub enum StepDirection {
-        Forward,
-        Reverse,
-    }
-
-    impl From<StepDirection> for Level {
-        fn from(value: StepDirection) -> Self {
-            match value {
-                StepDirection::Forward => Self::Low,
-                StepDirection::Reverse => Self::High,
-            }
-        }
-    }
+    const M0_PIN: u8 = 17;
+    const M1_PIN: u8 = 27;
+    const M2_PIN: u8 = 22;
 
     pub struct RpiControl {
-        step: Mutex<OutputPin>,
-        dir: Mutex<OutputPin>,
+        pub motor_1: Mutex<Drv8825Motor>,
     }
 
     impl RpiControl {
@@ -34,23 +26,20 @@ mod rpi {
             let gpio = Gpio::new().expect("Failed to get gpio");
 
             Self {
-                step: gpio.get(STEP_PIN).unwrap().into_output().into(),
-                dir: gpio.get(DIR_PIN).unwrap().into_output().into(),
+                motor_1: Drv8825Motor::new(
+                    gpio.get(STEP_PIN).unwrap().into_output(),
+                    gpio.get(DIR_PIN).unwrap().into_output(),
+                    gpio.get(M0_PIN).unwrap().into_output(),
+                    gpio.get(M1_PIN).unwrap().into_output(),
+                    gpio.get(M2_PIN).unwrap().into_output(),
+                    MicroStepMode::Step16,
+                )
+                .into(),
             }
         }
 
-        pub async fn step(&self, dir: StepDirection, steps: usize) {
-            let mut dir_pin = self.dir.lock().await;
-            let mut step_pin = self.step.lock().await;
-            dir_pin.write(dir.into());
-            sleep(Duration::from_millis(50)).await;
-
-            for _ in 0..steps {
-                step_pin.set_high();
-                sleep(Duration::from_micros(800)).await;
-                step_pin.set_low();
-                sleep(Duration::from_micros(800)).await;
-            }
+        pub async fn motor_1(&self) -> MutexGuard<'_, Drv8825Motor> {
+            self.motor_1.lock().await
         }
     }
 }
@@ -60,8 +49,10 @@ mod rpi {
 async fn test_motor(app: AppHandle) {
     use tauri::Manager;
 
+    use crate::drv8825::StepDirection;
+
     let rpi = app.state::<rpi::RpiControl>();
-    rpi.step(rpi::StepDirection::Forward, 200).await;
+    rpi.motor_1().await.step(StepDirection::Forward, 200).await;
 }
 
 #[cfg(not(feature = "rpi"))]
