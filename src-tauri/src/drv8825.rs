@@ -1,7 +1,11 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use rppal::gpio::{Level, OutputPin};
 use tokio::time::sleep;
+
+const INITIAL_DELAY_US: u64 = 500;
+const MIN_DELAY_US: u64 = 200;
+const ACCEL_STEPS: usize = 100;
 
 pub enum MicroStepMode {
     FullStep,
@@ -43,11 +47,32 @@ impl Drv8825Motor {
         self.dir_pin.write(dir.into());
         sleep(Duration::from_millis(50)).await;
 
-        for _ in 0..steps {
+        for step_count in 0..steps {
+            let delay_us = if step_count < ACCEL_STEPS {
+                map(
+                    step_count as u64,
+                    0,
+                    ACCEL_STEPS as u64,
+                    INITIAL_DELAY_US,
+                    MIN_DELAY_US,
+                )
+            } else if step_count > (steps - ACCEL_STEPS) {
+                map(
+                    step_count as u64,
+                    (steps - ACCEL_STEPS) as u64,
+                    steps as u64,
+                    MIN_DELAY_US,
+                    INITIAL_DELAY_US,
+                )
+            } else {
+                MIN_DELAY_US
+            };
+
             self.step_pin.set_high();
-            sleep(Duration::from_micros(800)).await;
+            busy_wait_us(2);
             self.step_pin.set_low();
-            sleep(Duration::from_micros(800)).await;
+
+            busy_wait_us(delay_us);
         }
     }
 }
@@ -64,4 +89,17 @@ impl From<StepDirection> for Level {
             StepDirection::Reverse => Self::High,
         }
     }
+}
+
+fn busy_wait_us(microseconds: u64) {
+    let now = Instant::now();
+    let wait = Duration::from_micros(microseconds);
+    while now.elapsed() < wait {}
+}
+
+fn map(x: u64, in_min: u64, in_max: u64, out_min: u64, out_max: u64) -> u64 {
+    if in_max == in_min {
+        return out_min;
+    }
+    (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 }

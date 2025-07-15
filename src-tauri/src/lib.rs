@@ -52,7 +52,10 @@ async fn test_motor(app: AppHandle) {
     use crate::drv8825::StepDirection;
 
     let rpi = app.state::<rpi::RpiControl>();
-    rpi.motor_1().await.step(StepDirection::Forward, 200).await;
+    rpi.motor_1()
+        .await
+        .step(StepDirection::Forward, 200 * 16)
+        .await;
 }
 
 #[cfg(not(feature = "rpi"))]
