@@ -13,6 +13,10 @@
         isPopUpOpen = true;
     }
 
+    async function test_motor() {
+        await invoke("test_motor");
+    }
+
     async function exit() {
         await invoke("exit");
     }
@@ -25,7 +29,7 @@
     <div
         style="display: flex; align-items: center; text-align: center; justify-content: space-between; width: 100%;"
     >
-        <div></div>
+        <button class="button" onclick={test_motor}>Test Motor</button>
         <h1 style="text-align: center;">Inventory</h1>
         <button class="button" onclick={exit}>Exit</button>
     </div>
