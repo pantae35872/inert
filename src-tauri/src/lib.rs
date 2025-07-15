@@ -46,7 +46,7 @@ mod rpi {
 
 #[cfg(feature = "rpi")]
 #[tauri::command]
-async fn test_motor(app: AppHandle) {
+async fn test_motor(app: AppHandle, direction: bool, steps: usize) {
     use tauri::Manager;
 
     use crate::drv8825::StepDirection;
@@ -54,14 +54,14 @@ async fn test_motor(app: AppHandle) {
     let rpi = app.state::<rpi::RpiControl>();
     rpi.motor_1()
         .await
-        .step(StepDirection::Forward, 200 * 16)
+        .step(StepDirection::from(direction), steps)
         .await;
 }
 
 #[cfg(not(feature = "rpi"))]
 #[tauri::command]
-async fn test_motor(_: AppHandle) {
-    println!("Test motor");
+async fn test_motor(_: AppHandle, direction: bool, steps: usize) {
+    println!("Test motor direction: {direction} steps: {steps}");
 }
 
 #[tauri::command]

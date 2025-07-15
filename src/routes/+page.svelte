@@ -8,13 +8,16 @@
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let isPopUpOpen: boolean = $state(false);
 
+    let steps: number = $state(0);
+    let direction: boolean = $state(true);
+
     export function openPopup(snippet: Snippet) {
         popUpSnippet = snippet;
         isPopUpOpen = true;
     }
 
     async function test_motor() {
-        await invoke("test_motor");
+        await invoke("test_motor", { steps, direction });
     }
 
     async function exit() {
@@ -29,9 +32,15 @@
     <div
         style="display: flex; align-items: center; text-align: center; justify-content: space-between; width: 100%;"
     >
-        <button class="button" onclick={test_motor}>Test Motor</button>
+        <div></div>
         <h1 style="text-align: center;">Inventory</h1>
         <button class="button" onclick={exit}>Exit</button>
+    </div>
+
+    <div class="motor-test">
+        <button class="button" onclick={test_motor}>Test Motor</button>
+        <input type="number" bind:value={steps} />
+        <input type="checkbox" bind:checked={direction} />
     </div>
     <div class="items-container">
         {#each Array(100) as _}

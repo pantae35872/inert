@@ -52,6 +52,7 @@ impl Drv8825Motor {
     }
 }
 
+#[derive(Debug)]
 pub enum StepDirection {
     Forward,
     Reverse,
@@ -62,6 +63,16 @@ impl From<StepDirection> for Level {
         match value {
             StepDirection::Forward => Self::Low,
             StepDirection::Reverse => Self::High,
+        }
+    }
+}
+
+impl From<bool> for StepDirection {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::Forward
+        } else {
+            Self::Reverse
         }
     }
 }
