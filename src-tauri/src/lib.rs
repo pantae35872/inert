@@ -27,11 +27,11 @@ mod rpi {
 
             Self {
                 motor_1: Drv8825Motor::new(
-                    gpio.get(STEP_PIN).unwrap().into_output(),
-                    gpio.get(DIR_PIN).unwrap().into_output(),
-                    gpio.get(M0_PIN).unwrap().into_output(),
-                    gpio.get(M1_PIN).unwrap().into_output(),
-                    gpio.get(M2_PIN).unwrap().into_output(),
+                    gpio.get(STEP_PIN).unwrap().into_output_low(),
+                    gpio.get(DIR_PIN).unwrap().into_output_low(),
+                    gpio.get(M0_PIN).unwrap().into_output_low(),
+                    gpio.get(M1_PIN).unwrap().into_output_low(),
+                    gpio.get(M2_PIN).unwrap().into_output_low(),
                     MicroStepMode::Step16,
                 )
                 .into(),
