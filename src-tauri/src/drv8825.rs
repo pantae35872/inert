@@ -19,9 +19,9 @@ impl Drv8825Motor {
 
         for _ in 0..steps {
             self.step_pin.set_high();
-            busy_wait_us(500);
+            busy_wait_us(500).await;
             self.step_pin.set_low();
-            busy_wait_us(500);
+            busy_wait_us(500).await;
         }
     }
 }
@@ -51,8 +51,12 @@ impl From<bool> for StepDirection {
     }
 }
 
-fn busy_wait_us(microseconds: u64) {
-    let now = Instant::now();
-    let wait = Duration::from_micros(microseconds);
-    while now.elapsed() < wait {}
+async fn busy_wait_us(microseconds: u64) {
+    tokio::task::spawn_blocking(move || {
+        let now = Instant::now();
+        let wait = Duration::from_micros(microseconds);
+        while now.elapsed() < wait {}
+    })
+    .await
+    .unwrap();
 }
