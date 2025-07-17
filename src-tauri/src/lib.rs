@@ -14,8 +14,8 @@ mod rpi {
     const MOTOR1_STEP_PIN: u8 = 23;
     const MOTOR1_DIR_PIN: u8 = 24;
 
-    const MOTOR2_STEP_PIN: u8 = 23;
-    const MOTOR2_DIR_PIN: u8 = 24;
+    const MOTOR2_STEP_PIN: u8 = 5;
+    const MOTOR2_DIR_PIN: u8 = 6;
 
     pub struct RpiControl {
         motor_1: Mutex<Drv8825Motor>,
