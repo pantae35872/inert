@@ -58,15 +58,12 @@ async fn test_motor(app: AppHandle, direction: bool, steps: usize) {
     use crate::drv8825::StepDirection;
 
     let rpi = app.state::<rpi::RpiControl>();
-    rpi.motor_1()
-        .await
-        .step(StepDirection::from(direction), steps)
-        .await;
-
-    rpi.motor_2()
-        .await
-        .step(StepDirection::from(!direction), steps)
-        .await;
+    let mut motor1 = rpi.motor_1().await;
+    let mut motor2 = rpi.motor_2().await;
+    tokio::join!(
+        motor1.step(StepDirection::from(direction), steps),
+        motor2.step(StepDirection::from(!direction), steps)
+    );
 }
 
 #[cfg(not(feature = "rpi"))]
