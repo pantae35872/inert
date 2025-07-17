@@ -18,8 +18,6 @@ impl Esp32Cam {
     pub fn new() -> Result<Self, Error> {
         let mut uart = Uart::new(115_200, Parity::None, 8, 1)?;
 
-        uart.set_read_mode(1, Duration::default())?;
-
         assert!(
             !uart.is_read_blocking(),
             "esp32 cam shouldn't be blocking read"
