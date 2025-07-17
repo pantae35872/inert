@@ -2,6 +2,8 @@ use tauri::AppHandle;
 
 #[cfg(feature = "rpi")]
 pub mod drv8825;
+#[cfg(feature = "rpi")]
+pub mod esp32_cam;
 
 #[cfg(feature = "rpi")]
 mod rpi {
@@ -9,7 +11,7 @@ mod rpi {
     use rppal::gpio::Gpio;
     use tokio::sync::{Mutex, MutexGuard};
 
-    use crate::drv8825::Drv8825Motor;
+    use crate::{drv8825::Drv8825Motor, esp32_cam::Esp32Cam};
 
     const MOTOR1_STEP_PIN: u8 = 23;
     const MOTOR1_DIR_PIN: u8 = 24;
@@ -20,6 +22,7 @@ mod rpi {
     pub struct RpiControl {
         motor_1: Mutex<Drv8825Motor>,
         motor_2: Mutex<Drv8825Motor>,
+        camera: Mutex<Esp32Cam>,
     }
 
     impl RpiControl {
@@ -37,6 +40,7 @@ mod rpi {
                     gpio.get(MOTOR2_DIR_PIN).unwrap().into_output_low(),
                 )
                 .into(),
+                camera: Esp32Cam::new().expect("Esp32 cam error").into(),
             }
         }
 
@@ -46,6 +50,10 @@ mod rpi {
 
         pub async fn motor_2(&self) -> MutexGuard<'_, Drv8825Motor> {
             self.motor_2.lock().await
+        }
+
+        pub async fn camera(&self) -> MutexGuard<'_, Esp32Cam> {
+            self.camera.lock().await
         }
     }
 }
@@ -66,10 +74,26 @@ async fn test_motor(app: AppHandle, direction: bool, steps: usize) {
     );
 }
 
+#[cfg(feature = "rpi")]
+#[tauri::command]
+async fn test_camera(app: AppHandle) -> Vec<u8> {
+    use tauri::Manager;
+
+    let rpi = app.state::<rpi::RpiControl>();
+    let mut cam = rpi.camera().await;
+    cam.capture().unwrap_or(&[]).to_vec()
+}
+
 #[cfg(not(feature = "rpi"))]
 #[tauri::command]
 async fn test_motor(_: AppHandle, direction: bool, steps: usize) {
     println!("Test motor direction: {direction} steps: {steps}");
+}
+
+#[cfg(not(feature = "rpi"))]
+#[tauri::command]
+async fn test_camera(_: AppHandle) -> Vec<u8> {
+    Vec::new()
 }
 
 #[tauri::command]
@@ -94,7 +118,7 @@ pub fn run() {
             let _ = app.handle(); // suppress unused warning
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![test_motor, exit])
+        .invoke_handler(tauri::generate_handler![test_motor, test_camera, exit])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

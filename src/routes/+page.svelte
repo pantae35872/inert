@@ -10,14 +10,22 @@
 
     let steps: number = $state(0);
     let direction: boolean = $state(true);
+    let image_url: string | undefined = $state(undefined);
+
+    async function test_motor() {
+        await invoke("test_motor", { steps, direction });
+    }
+
+    async function test_camera() {
+        const image_raw: Uint8Array = await invoke("test_camera");
+
+        const blob = new Blob([image_raw], { type: "image/jpeg" });
+        image_url = URL.createObjectURL(blob);
+    }
 
     export function openPopup(snippet: Snippet) {
         popUpSnippet = snippet;
         isPopUpOpen = true;
-    }
-
-    async function test_motor() {
-        await invoke("test_motor", { steps, direction });
     }
 
     async function exit() {
@@ -41,6 +49,12 @@
         <button class="button" onclick={test_motor}>Test Motor</button>
         <input type="number" bind:value={steps} />
         <input type="checkbox" bind:checked={direction} />
+    </div>
+    <div class="camera-test">
+        <button class="button" onclick={test_camera}>Test Camera</button>
+        {#if image_url}
+            <img src={image_url} alt="Esp32 Camera" />
+        {/if}
     </div>
     <div class="items-container">
         {#each Array(100) as _}
