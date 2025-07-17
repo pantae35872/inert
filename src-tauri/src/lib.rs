@@ -9,16 +9,17 @@ mod rpi {
     use rppal::gpio::Gpio;
     use tokio::sync::{Mutex, MutexGuard};
 
-    use crate::drv8825::{Drv8825Motor, MicroStepMode};
+    use crate::drv8825::Drv8825Motor;
 
-    const STEP_PIN: u8 = 23;
-    const DIR_PIN: u8 = 24;
-    const M0_PIN: u8 = 17;
-    const M1_PIN: u8 = 27;
-    const M2_PIN: u8 = 22;
+    const MOTOR1_STEP_PIN: u8 = 23;
+    const MOTOR1_DIR_PIN: u8 = 24;
+
+    const MOTOR2_STEP_PIN: u8 = 23;
+    const MOTOR2_DIR_PIN: u8 = 24;
 
     pub struct RpiControl {
-        pub motor_1: Mutex<Drv8825Motor>,
+        motor_1: Mutex<Drv8825Motor>,
+        motor_2: Mutex<Drv8825Motor>,
     }
 
     impl RpiControl {
@@ -27,12 +28,13 @@ mod rpi {
 
             Self {
                 motor_1: Drv8825Motor::new(
-                    gpio.get(STEP_PIN).unwrap().into_output_low(),
-                    gpio.get(DIR_PIN).unwrap().into_output_low(),
-                    gpio.get(M0_PIN).unwrap().into_output_low(),
-                    gpio.get(M1_PIN).unwrap().into_output_low(),
-                    gpio.get(M2_PIN).unwrap().into_output_low(),
-                    MicroStepMode::Step16,
+                    gpio.get(MOTOR1_STEP_PIN).unwrap().into_output_low(),
+                    gpio.get(MOTOR1_DIR_PIN).unwrap().into_output_low(),
+                )
+                .into(),
+                motor_2: Drv8825Motor::new(
+                    gpio.get(MOTOR2_STEP_PIN).unwrap().into_output_low(),
+                    gpio.get(MOTOR2_DIR_PIN).unwrap().into_output_low(),
                 )
                 .into(),
             }
@@ -40,6 +42,10 @@ mod rpi {
 
         pub async fn motor_1(&self) -> MutexGuard<'_, Drv8825Motor> {
             self.motor_1.lock().await
+        }
+
+        pub async fn motor_2(&self) -> MutexGuard<'_, Drv8825Motor> {
+            self.motor_2.lock().await
         }
     }
 }
@@ -55,6 +61,11 @@ async fn test_motor(app: AppHandle, direction: bool, steps: usize) {
     rpi.motor_1()
         .await
         .step(StepDirection::from(direction), steps)
+        .await;
+
+    rpi.motor_2()
+        .await
+        .step(StepDirection::from(!direction), steps)
         .await;
 }
 
