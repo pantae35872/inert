@@ -17,17 +17,15 @@ pub enum Error {
 
 impl Esp32Cam {
     pub fn new() -> Result<Self, Error> {
-        let uart = Uart::new(115_200, Parity::None, 8, 1)?;
+        let mut uart = Uart::new(57600, Parity::None, 8, 1)?;
 
-        assert!(
-            !uart.is_read_blocking(),
-            "esp32 cam shouldn't be blocking read"
-        );
+        uart.set_read_mode(1, Duration::default())?;
 
         assert!(
             !uart.is_write_blocking(),
             "esp32 cam shouldn't be blocking write"
         );
+
         Ok(Self {
             buffer: Vec::new(),
             uart,
