@@ -81,7 +81,7 @@ async fn test_camera(app: AppHandle) -> Vec<u8> {
 
     let rpi = app.state::<rpi::RpiControl>();
     let mut cam = rpi.camera().await;
-    cam.capture().unwrap_or(&[]).to_vec()
+    cam.capture().unwrap().to_vec()
 }
 
 #[cfg(not(feature = "rpi"))]
