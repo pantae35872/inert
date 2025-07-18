@@ -83,6 +83,8 @@ impl Esp32Cam {
             Err(err) => return Err(err),
         };
 
+        self.command(Esp32Command::Capture)?;
+
         let mut length = [0u8; 4];
         assert_eq!(
             self.uart.read(&mut length)?,
