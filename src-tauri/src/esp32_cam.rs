@@ -95,14 +95,12 @@ impl Esp32Cam {
         let length = u32::from_le_bytes(length) as usize;
 
         self.buffer.resize(length, 0);
-        let mut file = File::create("/home/john/img.jpeg").unwrap();
 
         let mut read_pos = 0;
         while read_pos < length {
             let readed = self
                 .uart
                 .read(&mut self.buffer[read_pos..][..(length - read_pos).min(512)])?;
-            file.write_all(&self.buffer[read_pos..][..readed]).unwrap();
             read_pos += readed;
         }
 

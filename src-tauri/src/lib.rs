@@ -76,12 +76,13 @@ async fn test_motor(app: AppHandle, direction: bool, steps: usize) {
 
 #[cfg(feature = "rpi")]
 #[tauri::command]
-async fn test_camera(app: AppHandle) -> Vec<u8> {
+async fn test_camera(app: AppHandle) -> String {
+    use base64::{prelude::BASE64_STANDARD, Engine};
     use tauri::Manager;
 
     let rpi = app.state::<rpi::RpiControl>();
     let mut cam = rpi.camera().await;
-    cam.capture().unwrap().to_vec()
+    BASE64_STANDARD.encode(cam.capture().unwrap())
 }
 
 #[cfg(not(feature = "rpi"))]
@@ -92,8 +93,8 @@ async fn test_motor(_: AppHandle, direction: bool, steps: usize) {
 
 #[cfg(not(feature = "rpi"))]
 #[tauri::command]
-async fn test_camera(_: AppHandle) -> Vec<u8> {
-    Vec::new()
+async fn test_camera(_: AppHandle) -> String {
+    String::new()
 }
 
 #[tauri::command]
