@@ -46,7 +46,7 @@ pub enum Error {
 
 impl Esp32Cam {
     pub fn new() -> Result<Self, Error> {
-        let mut uart = Uart::new(115_200, Parity::None, 8, 1)?;
+        let mut uart = Uart::new(57600, Parity::None, 8, 1)?;
 
         uart.set_read_mode(4, Duration::default())?;
 
@@ -101,7 +101,7 @@ impl Esp32Cam {
         while read_pos < length {
             let readed = self
                 .uart
-                .read(&mut self.buffer[read_pos..][..(length - read_pos).min(128)])?;
+                .read(&mut self.buffer[read_pos..][..(length - read_pos).min(512)])?;
             file.write_all(&self.buffer[read_pos..][..readed]).unwrap();
             read_pos += readed;
         }
