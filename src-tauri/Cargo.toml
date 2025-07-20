@@ -23,7 +23,6 @@ sim = []
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.
-rustflags = ["-Zthreads=8"] # Better compile performance.
 
 [profile.release]
 codegen-units = 1 # Allows LLVM to perform better optimization.
@@ -32,7 +31,7 @@ opt-level = 3 # Prioritizes small binary size. Use `3` if you prefer speed.
 panic = "abort" # Higher performance by disabling panic handlers.
 strip = true # Ensures debug symbols are removed.
 trim-paths = "all" # Removes potentially privileged information from your binaries.
-rustflags = ["-Cdebuginfo=0", "-Zthreads=8"] # Better compile performance.
+rustflags = ["-Cdebuginfo=0"] # Better compile performance.
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
