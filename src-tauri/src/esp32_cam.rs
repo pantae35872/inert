@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write, time::Duration};
+use std::time::Duration;
 
 use rppal::uart::{self, Parity, Queue, Uart};
 use thiserror::Error;

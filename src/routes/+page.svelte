@@ -17,7 +17,11 @@
     }
 
     async function test_camera() {
-        const image_raw: Uint8Array = await invoke("test_camera");
+        const image_64: string = await invoke("test_camera");
+
+        const image_raw = Uint8Array.from(atob(image_64), (c) =>
+            c.charCodeAt(0),
+        );
 
         const blob = new Blob([image_raw], { type: "image/jpeg" });
         image_url = URL.createObjectURL(blob);

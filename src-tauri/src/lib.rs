@@ -11,7 +11,7 @@ mod rpi {
     use rppal::gpio::Gpio;
     use tokio::sync::{Mutex, MutexGuard};
 
-    use crate::{drv8825::Drv8825Motor, esp32_cam::Esp32Cam};
+    use crate::drv8825::Drv8825Motor;
 
     const MOTOR1_STEP_PIN: u8 = 23;
     const MOTOR1_DIR_PIN: u8 = 24;
@@ -22,7 +22,6 @@ mod rpi {
     pub struct RpiControl {
         motor_1: Mutex<Drv8825Motor>,
         motor_2: Mutex<Drv8825Motor>,
-        camera: Mutex<Esp32Cam>,
     }
 
     impl RpiControl {
@@ -40,7 +39,6 @@ mod rpi {
                     gpio.get(MOTOR2_DIR_PIN).unwrap().into_output_low(),
                 )
                 .into(),
-                camera: Esp32Cam::new().expect("Esp32 cam error").into(),
             }
         }
 
@@ -50,10 +48,6 @@ mod rpi {
 
         pub async fn motor_2(&self) -> MutexGuard<'_, Drv8825Motor> {
             self.motor_2.lock().await
-        }
-
-        pub async fn camera(&self) -> MutexGuard<'_, Esp32Cam> {
-            self.camera.lock().await
         }
     }
 }
@@ -76,13 +70,8 @@ async fn test_motor(app: AppHandle, direction: bool, steps: usize) {
 
 #[cfg(feature = "rpi")]
 #[tauri::command]
-async fn test_camera(app: AppHandle) -> String {
-    use base64::{prelude::BASE64_STANDARD, Engine};
-    use tauri::Manager;
-
-    let rpi = app.state::<rpi::RpiControl>();
-    let mut cam = rpi.camera().await;
-    BASE64_STANDARD.encode(cam.capture().unwrap())
+async fn test_camera(_app: AppHandle) -> String {
+    todo!("Buy new cam for rasberry pi 5")
 }
 
 #[cfg(not(feature = "rpi"))]
