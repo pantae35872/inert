@@ -8,12 +8,11 @@
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let isPopUpOpen: boolean = $state(false);
 
-    let steps: number = $state(0);
     let direction: boolean = $state(true);
     let image_url: string | undefined = $state(undefined);
 
     async function test_motor() {
-        await invoke("test_motor", { steps, direction });
+        await invoke("test_motor", { direction });
     }
 
     async function test_camera() {
@@ -51,7 +50,6 @@
 
     <div class="motor-test">
         <button class="button" onclick={test_motor}>Test Motor</button>
-        <input type="number" bind:value={steps} />
         <input type="checkbox" bind:checked={direction} />
     </div>
     <div class="camera-test">
