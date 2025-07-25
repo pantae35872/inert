@@ -4,6 +4,7 @@
     import Overlay from "./Overlay.svelte";
     import type { Snippet } from "svelte";
     import { invoke } from "@tauri-apps/api/core";
+    import { scale } from "svelte/transition";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let isPopUpOpen: boolean = $state(false);
@@ -34,21 +35,42 @@
     async function exit() {
         await invoke("exit");
     }
+
+    function addItem() {
+        openPopup(addItemPopup);
+    }
 </script>
+
+{#snippet addItemPopup()}
+    <div
+        class="add-item"
+        transition:scale={{
+            duration: 200,
+        }}
+    >
+        <form class="add-item-form">
+            <h2>Add Item</h2>
+            <button class="button" type="submit">Add</button>
+        </form>
+    </div>
+{/snippet}
 
 <main class="container no-select">
     <Overlay bind:open={isPopUpOpen}>
         {@render popUpSnippet?.()}
     </Overlay>
     <div
-        style="display: flex; align-items: center; text-align: center; justify-content: space-between; width: 100%;"
+        style="display: flex; align-items: center; text-align: center; justify-content: space-between; padding: 1rem;"
     >
-        <div></div>
+        <button class="button" style="width: 10rem;" onclick={addItem}
+            >Add Item</button
+        >
         <h1 style="text-align: center;">Inventory</h1>
-        <button class="button" onclick={exit}>Exit</button>
+        <button class="button" style="width: 10rem;" onclick={exit}>Exit</button
+        >
     </div>
 
-    <div class="motor-test">
+    <!-- <div class="motor-test">
         <button class="button" onclick={test_motor}>Test Motor</button>
         <input type="checkbox" bind:checked={direction} />
     </div>
@@ -57,8 +79,8 @@
         {#if image_url}
             <img src={image_url} alt="Esp32 Camera" />
         {/if}
-    </div>
-    <div class="items-container">
+    </div> -->
+    <div class="items-container" style="padding: 1rem;">
         {#each Array(100) as _}
             <Item
                 image_source="https://t3.ftcdn.net/jpg/00/77/77/16/360_F_77771611_BCUZR6NW73NVdiLgmOeIzzSh4RP2U3aV.jpg"
@@ -70,26 +92,33 @@
 </main>
 
 <style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1em;
-    }
-
     .items-container {
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
 
-        justify-content: center;
-        width: 100%;
-        max-width: 100%;
+        justify-content: space-between;
 
         scroll-behavior: smooth;
         overflow-y: auto;
+    }
 
-        -webkit-overflow-scrolling: touch;
+    .add-item {
+        background-color: var(--bg-color-3);
+        padding: 10px;
+        border: 1px solid var(--bg-color-2);
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 2px var(--bg-color-2);
+    }
+
+    .add-item-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+
+        max-height: 100%; /* Don't exceed popup height */
+    }
+
+    .item-header {
     }
 </style>
