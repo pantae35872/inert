@@ -1,17 +1,27 @@
 :root {
-    --fg-color: rgba(255, 255, 255, 0.87);
-    --fg-color-2: rgba(200, 200, 200, 1);
-    --bg-color: #242424;
-    --bg-color-2: #3a3a3a;
-    --bg-color-3: #1a1a1a;
-    --bg-color-4: #161616;
+    /*--fg-color: rgba(245, 245, 245, 0.95);
+    --fg-color-2: rgba(180, 180, 180, 1);
+    --bg-color: #1e1e1e;
+    --bg-color-2: #2a2a2a;
+    --bg-color-3: #121212;
+    --bg-color-4: #0e0e0e;*/
 
-    font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+    --fg-color: #c3e88d;
+    --fg-color-2: #82aaff;
+    --bg-color: #0f111a;
+    --bg-color-2: #1a1c25;
+    --bg-color-3: #131520;
+    --bg-color-4: #0c0e16;
+
+    --border-color: #2a2e3a;
+    /* Soft bluish-gray border */
+
+    font-family: 'Fira Code', 'JetBrains Mono', 'Inter', sans-serif;
     font-size: 1.6vw;
     line-height: 2.8vw;
     font-weight: 400;
 
-    color: var(--fg-color-2);
+    color: var(--fg-color);
     background-color: var(--bg-color-3);
 
     font-synthesis: none;
@@ -30,7 +40,7 @@
     font-family: inherit;
     color: var(--fg-color-2);
     background-color: var(--bg-color-3);
-    border-color: var(--bg-color-2);
+    border-color: var(--border-color);
     transition: border-color 0.25s;
     box-shadow: 0 2px 2px rgba(1, 0, 0, 0.2);
     transition: 0.2s ease;

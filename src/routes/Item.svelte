@@ -119,7 +119,7 @@
 
         background-color: var(--bg-color-3);
         padding: 10px;
-        border: 1px solid var(--bg-color-2);
+        border: 1px solid var(--border-color);
         border-radius: 0.5rem;
         box-shadow: 0 5px 5px var(--bg-color-2);
 
@@ -144,7 +144,7 @@
     .numpad {
         background-color: var(--bg-color-3);
         padding: 10px;
-        border: 1px solid var(--bg-color-2);
+        border: 1px solid var(--border-color);
         border-radius: 0.5rem;
         box-shadow: 0 2px 2px var(--bg-color-2);
     }
@@ -195,7 +195,7 @@
     .item-amount-input {
         outline: none;
         border-radius: 0.31rem;
-        border: 2px solid var(--bg-color-2);
+        border: 2px solid var(--border-color);
         background-color: var(--bg-color);
         color: var(--fg-color-2);
         padding: 0 1.25rem 0 3.12rem;
@@ -207,7 +207,7 @@
     }
 
     .item-amount-input::placeholder {
-        color: var(--fg-color);
+        color: var(--fg-color-2);
     }
 
     .image-wrapper {
@@ -222,6 +222,8 @@
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
+
+        border-radius: 0.31rem;
     }
 
     .numpad {
@@ -252,7 +254,7 @@
         font-size: 1.25rem;
         border: 1px solid;
         background-color: var(--bg-color-4, #ddd);
-        border-color: var(--bg-color-2);
+        border-color: var(--border-color);
         color: var(--fg-color, #000);
         border-radius: 0.5rem;
         cursor: pointer;

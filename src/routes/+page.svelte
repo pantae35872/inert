@@ -106,7 +106,7 @@
     .add-item {
         background-color: var(--bg-color-3);
         padding: 10px;
-        border: 1px solid var(--bg-color-2);
+        border: 1px solid var(--border-color);
         border-radius: 0.5rem;
         box-shadow: 0 2px 2px var(--bg-color-2);
     }
@@ -117,8 +117,5 @@
         gap: 0.8rem;
 
         max-height: 100%; /* Don't exceed popup height */
-    }
-
-    .item-header {
     }
 </style>
