@@ -3,6 +3,7 @@ use tokio::sync::{Mutex, MutexGuard};
 #[cfg(feature = "rpi")]
 mod rpi;
 
+#[cfg(feature = "sim")]
 mod sim;
 
 pub struct BackendImpl<M: MotorBackend> {
