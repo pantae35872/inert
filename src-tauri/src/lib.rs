@@ -3,7 +3,7 @@ use std::{convert::Infallible, process::Stdio};
 use bytes::Bytes;
 use futures::{Stream, StreamExt};
 use tauri::AppHandle;
-use tokio::{io::BufReader, process::Command, sync::broadcast};
+use tokio::{process::Command, sync::broadcast};
 use tokio_util::io::ReaderStream;
 use warp::Filter;
 
@@ -26,24 +26,7 @@ async fn test_motor(app: AppHandle, direction: bool) {
 }
 
 #[tauri::command]
-async fn serve_rpi_cam() {
-    let video_route = warp::path("video").map(|| {
-        let mut child = Command::new("libcamera-vid")
-            .args(["-t", "0", "--inline", "--codec", "mjpeg", "-o", "-"])
-            .stdout(Stdio::piped())
-            .spawn()
-            .expect("Failed to start camera stream");
-
-        let stdout = child.stdout.take().unwrap();
-        let stream = BufReader::new(stdout);
-        warp::http::Response::builder()
-            .header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
-            .body(warp::hyper::Body::wrap_stream(ReaderStream::new(stream)))
-            .unwrap()
-    });
-
-    warp::serve(video_route).run(([127, 0, 0, 1], 3030)).await;
-}
+async fn serve_rpi_cam() {}
 
 #[tauri::command]
 async fn test_camera(_app: AppHandle) -> String {
@@ -103,6 +86,7 @@ fn setup_video() {
     let mut child = Command::new("libcamera-vid")
         .args(["-t", "0", "--inline", "--codec", "mjpeg", "-o", "-"])
         .stdout(Stdio::piped())
+        .stderr(Stdio::null())
         .spawn()
         .unwrap();
 
@@ -126,21 +110,15 @@ fn setup_video() {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    std::thread::spawn(|| {
-        let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(async {
-            setup_video();
-
-            futures::future::pending::<()>().await;
-        });
-    });
-
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             use tauri::Manager;
 
             use crate::backend::Backend;
+            tauri::async_runtime::spawn(async {
+                setup_video();
+            });
 
             app.manage(Backend::new());
 
