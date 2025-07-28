@@ -103,12 +103,6 @@
     <!-- <div class="motor-test">
         <button class="button" onclick={test_motor}>Test Motor</button>
         <input type="checkbox" bind:checked={direction} />
-    </div>
-    <div class="camera-test">
-        <button class="button" onclick={test_camera}>Test Camera</button>
-        {#if image_url}
-            <img src={image_url} alt="Esp32 Camera" />
-        {/if}
     </div> -->
     <div class="items-container" style="padding: 1rem;">
         {#each Array(100) as _}
