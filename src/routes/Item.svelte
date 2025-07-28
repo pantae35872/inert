@@ -123,7 +123,7 @@
         border-radius: 0.5rem;
         box-shadow: 0 5px 5px var(--bg-color-2);
 
-        width: 18rem;
+        width: 17.5rem;
         height: 20rem;
         max-width: 18rem;
         max-height: 20rem;
