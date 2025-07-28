@@ -74,10 +74,10 @@
                 {/if}
 
                 {#if detected_object}
-                    <div class="detect-object-text">
-                        <p>{detected_object.name}</p>
-                        <p>{detected_object.percentage}</p>
-                    </div>
+                    <p style="font-size: 0.8rem; margin: 0; padding: 0;">
+                        {detected_object.name}
+                        {detected_object.percentage}
+                    </p>
                 {:else}
                     <p style="font-size: 0.8rem; margin: 0; padding: 0;">
                         Detecting...
