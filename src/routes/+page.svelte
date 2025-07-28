@@ -25,9 +25,9 @@
         percentage: string;
     }
 
-    listen<DetectObjectResult>("update-detected-object", (event) => {
-        console.log("Received ");
-        detected_object = event.payload;
+    listen("update-detected-object", (event) => {
+        console.log(`Received ${event}`);
+        //detected_object = event.payload;
     });
 
     async function test_motor() {
