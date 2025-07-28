@@ -69,7 +69,8 @@ pub fn run() {
 
             let rpi_recognition = match env::var("RPI_RECOGNITION_PATH") {
                 Ok(p) => PathBuf::from_str(&p).unwrap(),
-                Err(_) => Path::new(&env::var("USER").expect("no USER environment variable"))
+                Err(_) => Path::new("/home")
+                    .join(env::var("USER").expect("no USER environment variable"))
                     .join("inert")
                     .join("rpi-recognition"),
             };
