@@ -149,6 +149,7 @@
 
     .add-item {
         max-height: 80%;
+        max-width: 50%;
 
         background-color: var(--bg-color-3);
         padding: 10px;
