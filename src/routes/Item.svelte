@@ -1,6 +1,7 @@
 <script lang="ts">
     import { scale } from "svelte/transition";
     import { openPopup } from "./+page.svelte";
+    import Numpad from "./Numpad.svelte";
 
     let {
         item_name,
@@ -11,19 +12,8 @@
 
     let amount: string = $state("");
     let numpadOn: boolean = $state(false);
+
     let left_amount = $derived(item_amount - Number(amount));
-
-    function appendNumber(n: number) {
-        amount += n;
-    }
-
-    function deleteLast() {
-        amount = amount.slice(0, -1);
-    }
-
-    function clearInput() {
-        amount = "";
-    }
 </script>
 
 {#snippet requestPopUp()}
@@ -61,35 +51,7 @@
             </form>
         </div>
 
-        {#if numpadOn}
-            <div
-                class="numpad"
-                transition:scale={{
-                    duration: 200,
-                }}
-            >
-                <div class="actual-numpad">
-                    {#each [[1, 2, 3], [4, 5, 6], [7, 8, 9]] as row}
-                        <div class="numpad-row">
-                            {#each row as n}
-                                <button onclick={() => appendNumber(n)}
-                                    >{n}</button
-                                >
-                            {/each}
-                        </div>
-                    {/each}
-                    <div class="numpad-row">
-                        <button onclick={clearInput}>C</button>
-                        <button onclick={() => appendNumber(0)}>0</button>
-                        <button onclick={deleteLast}>⌫</button>
-                    </div>
-                </div>
-
-                <button class="button" onclick={() => (numpadOn = false)}
-                    >X</button
-                >
-            </div>
-        {/if}
+        <Numpad bind:amount {numpadOn} />
     </div>
 {/snippet}
 
@@ -140,8 +102,7 @@
         bottom: 0.2rem;
     }
 
-    .item-request-popup,
-    .numpad {
+    .item-request-popup {
         background-color: var(--bg-color-3);
         padding: 10px;
         border: 1px solid var(--border-color);
@@ -224,45 +185,6 @@
         object-fit: contain;
 
         border-radius: 0.31rem;
-    }
-
-    .numpad {
-        display: flex;
-        gap: 0.5rem;
-        margin-left: 1rem;
-    }
-
-    .numpad .button {
-        padding: 0.7rem;
-    }
-
-    .actual-numpad {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .numpad-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 0.5rem;
-    }
-
-    .numpad-row button {
-        flex: 1;
-        padding: 1rem;
-        font-size: 1.25rem;
-        border: 1px solid;
-        background-color: var(--bg-color-4, #ddd);
-        border-color: var(--border-color);
-        color: var(--fg-color, #000);
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-
-    .numpad-row button:hover {
-        background-color: var(--bg-color-3, #ccc);
     }
 
     .item-amount-popup {
