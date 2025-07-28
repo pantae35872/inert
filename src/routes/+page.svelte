@@ -86,7 +86,7 @@
                 <input
                     class="item-amount-input"
                     placeholder="Item name"
-                    value={detected_object?.percentage}
+                    value={detected_object?.name}
                     type="text"
                     required
                     readonly
