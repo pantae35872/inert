@@ -12,7 +12,9 @@ use tokio::{
     process::Command,
 };
 
-use crate::backend::{Backend, CameraBackend, MotorBackend, MotorDirection, MotorRotation};
+use crate::backend::{
+    Backend, CameraBackend, CameraFrame, MotorBackend, MotorDirection, MotorRotation,
+};
 
 mod backend;
 
@@ -77,7 +79,8 @@ pub fn run() {
                 loop {
                     tokio::time::sleep(std::time::Duration::from_secs(3)).await;
 
-                    if let Some(image) = backend.camera().await.capture().await {
+                    let frame = backend.camera().await.capture();
+                    if let Some(image) = frame.take().await {
                         File::create("/tmp/object.jpeg")
                             .await
                             .unwrap()

@@ -1,4 +1,4 @@
-use std::{convert::Infallible, process::Stdio};
+use std::{convert::Infallible, future::Future, process::Stdio};
 
 use bytes::Bytes;
 use futures::{Stream, StreamExt};
@@ -10,7 +10,7 @@ use tokio::{
 use tokio_util::io::ReaderStream;
 use warp::Filter;
 
-use crate::backend::CameraBackend;
+use crate::backend::{CameraBackend, CameraFrame};
 
 pub struct CameraServer {
     rpi_cam_process: Option<Child>,
@@ -45,7 +45,17 @@ impl CameraServer {
     }
 }
 
+pub struct RpiCameraFrame(broadcast::Receiver<Vec<u8>>);
+
+impl CameraFrame for RpiCameraFrame {
+    async fn take(mut self) -> Option<Vec<u8>> {
+        self.0.recv().await.ok()
+    }
+}
+
 impl CameraBackend for CameraServer {
+    type FrameType = RpiCameraFrame;
+
     async fn start(&mut self) -> String {
         let mut child = Command::new("rpicam-vid")
             .args(["-t", "0", "-n", "--inline", "--codec", "mjpeg", "-o", "-"])
@@ -60,8 +70,8 @@ impl CameraBackend for CameraServer {
         "http://127.0.0.1:3030/video".to_string()
     }
 
-    async fn capture(&mut self) -> Option<Vec<u8>> {
-        self.tx.subscribe().recv().await.ok()
+    fn capture(&mut self) -> Self::FrameType {
+        RpiCameraFrame(self.tx.subscribe())
     }
 
     async fn stop(&mut self) {

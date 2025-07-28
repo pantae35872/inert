@@ -1,4 +1,4 @@
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::{Mutex, MutexGuard, RwLock};
 
 #[cfg(feature = "rpi")]
 mod rpi;
@@ -55,12 +55,18 @@ pub trait MotorBackend {
     async fn rotate(&mut self, direction: MotorDirection, rotation: MotorRotation);
 }
 
+pub trait CameraFrame {
+    async fn take(self) -> Option<Vec<u8>>;
+}
+
 pub trait CameraBackend {
+    type FrameType: CameraFrame;
+
     /// Start the camera server and return a url to that
     async fn start(&mut self) -> String;
 
     /// Capture a single frame
-    async fn capture(&mut self) -> Option<Vec<u8>>;
+    fn capture(&mut self) -> Self::FrameType;
 
     /// Stop the camera server
     async fn stop(&mut self);

@@ -1,4 +1,4 @@
-use crate::backend::{CameraBackend, MotorBackend};
+use crate::backend::{CameraBackend, CameraFrame, MotorBackend};
 
 pub type Motor = FakeMotor;
 pub type Camera = FakeCamera;
@@ -16,14 +16,24 @@ impl MotorBackend for FakeMotor {
     }
 }
 
+pub struct FakeCameraFrame;
+
+impl CameraFrame for FakeCameraFrame {
+    async fn take(self) -> Option<Vec<u8>> {
+        Some(Vec::new())
+    }
+}
+
 impl CameraBackend for FakeCamera {
+    type FrameType = FakeCameraFrame;
+
     async fn start(&mut self) -> String {
         println!("Start camera");
         format!("https://cdn.mos.cms.futurecdn.net/4wpKrH93D37dDPTisdqGy4-1200-80.jpg")
     }
 
-    async fn capture(&mut self) -> Option<Vec<u8>> {
-        Some(Vec::new())
+    fn capture(&mut self) -> FakeCameraFrame {
+        FakeCameraFrame
     }
 
     async fn stop(&mut self) {
