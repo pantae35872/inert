@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-        "csp": "default-src 'self' http://127.0.0.1:3030;"
+      "csp": null 
     }
   },
   "bundle": {
