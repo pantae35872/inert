@@ -1,4 +1,4 @@
-use std::{convert::Infallible, io::stdout, process::Stdio};
+use std::{convert::Infallible, process::Stdio};
 
 use bytes::Bytes;
 use futures::{Stream, StreamExt};
