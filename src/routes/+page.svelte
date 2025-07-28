@@ -70,6 +70,8 @@
         >
     </div>
 
+    <img src="http://localhost:3030/video" alt="Camera Stream" />
+
     <!-- <div class="motor-test">
         <button class="button" onclick={test_motor}>Test Motor</button>
         <input type="checkbox" bind:checked={direction} />
