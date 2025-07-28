@@ -66,7 +66,7 @@
     >
         <div class="add-item">
             <form class="add-item-form">
-                <h2>Add Item</h2>
+                <h2 style="font-size: 1rem; margin: 0.1rem;">Add Item</h2>
                 {#if camera_url}
                     <div class="image-wrapper">
                         <img src={camera_url} alt="Camera Stream" />
@@ -100,7 +100,11 @@
                     required
                     readonly
                 />
-                <button class="button" type="submit">Add</button>
+                <button
+                    class="button"
+                    style="font-size: 0.5rem; width: 84%;"
+                    type="submit">Add</button
+                >
             </form>
         </div>
 
@@ -166,7 +170,7 @@
 
     .add-item {
         max-height: 80%;
-        max-width: 50%;
+        max-width: 40%;
 
         background-color: var(--bg-color-3);
         padding: 10px;
@@ -183,7 +187,10 @@
         display: flex;
         flex-direction: column;
         overflow: auto;
-        gap: 0.8rem;
+        gap: 0.3rem;
+
+        align-items: center;
+        justify-content: center;
 
         max-height: 100%;
         height: 100%;
@@ -195,12 +202,13 @@
         border: 2px solid var(--border-color);
         background-color: var(--bg-color);
         color: var(--fg-color-2);
-        padding: 0 1.25rem 0 3.12rem;
-        font-size: 1.06rem;
+        font-size: 0.8rem;
         transition: 0.2s ease;
 
-        padding: 0.5rem;
+        padding: 0.3rem;
         margin: 0.1rem;
+
+        width: 80%;
     }
 
     .item-amount-input::placeholder {
@@ -208,14 +216,13 @@
     }
 
     .image-wrapper {
+        max-width: 80%;
+
         flex: 1 1 auto;
         overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-
-        margin: auto;
-        padding: auto;
     }
 
     .image-wrapper img {
