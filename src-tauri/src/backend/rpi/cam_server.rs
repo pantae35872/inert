@@ -48,7 +48,7 @@ impl CameraServer {
 impl CameraBackend for CameraServer {
     async fn start(&mut self) -> String {
         let mut child = Command::new("rpicam-vid")
-            .args(["-t", "0", "--inline", "--codec", "mjpeg", "-o", "-"])
+            .args(["-t", "0", "-n", "--inline", "--codec", "mjpeg", "-o", "-"])
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
             .spawn()
