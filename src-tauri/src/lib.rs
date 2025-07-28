@@ -117,7 +117,7 @@ pub fn run() {
                         {
                             handle
                                 .emit(
-                                    "update_detected_object",
+                                    "update-detected-object",
                                     DetectObjectResult {
                                         name: name.to_string(),
                                         percentage: percentage.to_string(),
