@@ -1,3 +1,5 @@
+#![feature(iter_next_chunk)]
+
 use std::{
     env,
     path::{Path, PathBuf},
@@ -100,7 +102,14 @@ pub fn run() {
                         let mut stdout = child.stdout.take().expect("no stdout");
                         let mut buf = String::new();
                         stdout.read_to_string(&mut buf).await.unwrap();
-                        println!("{buf}");
+                        if let Some([name, percentage]) = buf
+                            .split("\n")
+                            .next()
+                            .map(|buf| buf.split(":"))
+                            .and_then(|mut buf| buf.next_chunk::<2>().ok())
+                        {
+                            println!("Top 1, {name} {percentage}");
+                        }
                     }
                 }
             });
