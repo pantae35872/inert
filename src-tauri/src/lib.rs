@@ -126,7 +126,12 @@ fn setup_video() {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    setup_video();
+    std::thread::spawn(|| {
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(async {
+            setup_video();
+        });
+    });
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
