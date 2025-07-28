@@ -59,6 +59,9 @@ pub trait CameraBackend {
     /// Start the camera server and return a url to that
     async fn start(&mut self) -> String;
 
+    /// Capture a single frame
+    async fn capture(&mut self) -> Option<Vec<u8>>;
+
     /// Stop the camera server
     async fn stop(&mut self);
 }

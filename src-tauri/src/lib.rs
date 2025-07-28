@@ -1,4 +1,16 @@
+use std::{
+    env,
+    path::{Path, PathBuf},
+    process::Stdio,
+    str::FromStr,
+};
+
 use tauri::{AppHandle, Manager};
+use tokio::{
+    fs::File,
+    io::{AsyncReadExt, AsyncWriteExt},
+    process::Command,
+};
 
 use crate::backend::{Backend, CameraBackend, MotorBackend, MotorDirection, MotorRotation};
 
@@ -50,6 +62,43 @@ pub fn run() {
             use crate::backend::Backend;
 
             app.manage(tauri::async_runtime::block_on(async { Backend::new() }));
+
+            let handle = app.handle().clone();
+
+            let rpi_recognition = match env::var("RPI_RECOGNITION_PATH") {
+                Ok(p) => PathBuf::from_str(&p).unwrap(),
+                Err(_) => Path::new(&env::var("USER").expect("no USER environment variable"))
+                    .join("inert")
+                    .join("rpi-recognition"),
+            };
+
+            tauri::async_runtime::spawn(async move {
+                let backend = handle.state::<Backend>();
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+
+                    if let Some(image) = backend.camera().await.capture().await {
+                        File::create("/tmp/object.jpeg")
+                            .await
+                            .unwrap()
+                            .write_all(image.as_slice())
+                            .await
+                            .unwrap();
+
+                        let mut child = Command::new(rpi_recognition.join("classify_object.sh"))
+                            .args(["/tmp/object.jpeg"])
+                            .stdout(Stdio::piped())
+                            .stderr(Stdio::null())
+                            .spawn()
+                            .unwrap();
+
+                        let mut stdout = child.stdout.take().expect("no stdout");
+                        let mut buf = String::new();
+                        stdout.read_to_string(&mut buf).await.unwrap();
+                        println!("{buf}");
+                    }
+                }
+            });
 
             Ok(())
         })

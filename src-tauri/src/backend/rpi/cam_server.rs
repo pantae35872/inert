@@ -60,6 +60,10 @@ impl CameraBackend for CameraServer {
         "http://127.0.0.1:3030/video".to_string()
     }
 
+    async fn capture(&mut self) -> Option<Vec<u8>> {
+        self.tx.subscribe().recv().await.ok()
+    }
+
     async fn stop(&mut self) {
         if let Some(rpi_cam) = self.rpi_cam_process.as_mut() {
             rpi_cam

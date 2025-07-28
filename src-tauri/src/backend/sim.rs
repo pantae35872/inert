@@ -22,6 +22,10 @@ impl CameraBackend for FakeCamera {
         format!("https://cdn.mos.cms.futurecdn.net/4wpKrH93D37dDPTisdqGy4-1200-80.jpg")
     }
 
+    async fn capture(&mut self) -> Option<Vec<u8>> {
+        Some(Vec::new())
+    }
+
     async fn stop(&mut self) {
         println!("Stop camera");
     }
