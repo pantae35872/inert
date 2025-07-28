@@ -49,7 +49,7 @@ pub fn run() {
 
             use crate::backend::Backend;
 
-            app.manage(Backend::new());
+            app.manage(tauri::async_runtime::block_on(async { Backend::new() }));
 
             Ok(())
         })
