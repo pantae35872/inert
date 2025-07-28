@@ -26,6 +26,7 @@
     }
 
     listen<DetectObjectResult>("update-detected-object", (event) => {
+        console.log("Received ");
         detected_object = event.payload;
     });
 
@@ -79,7 +80,9 @@
                         <p>{detected_object.percentage}</p>
                     </div>
                 {:else}
-                    <p>Detecting...</p>
+                    <p style="font-size: 0.8rem; margin: 0; padding: 0;">
+                        Detecting...
+                    </p>
                 {/if}
                 <input
                     class="item-amount-input"
