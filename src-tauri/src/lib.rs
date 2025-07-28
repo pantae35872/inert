@@ -92,7 +92,7 @@ pub fn run() {
                             .args(["/tmp/object.jpeg"])
                             .stdout(Stdio::piped())
                             .stderr(Stdio::null())
-                            .current_dir(rpi_recognition)
+                            .current_dir(rpi_recognition.clone())
                             .spawn()
                             .unwrap();
 
