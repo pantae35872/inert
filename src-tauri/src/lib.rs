@@ -83,7 +83,7 @@ fn find_marker(data: &[u8], marker: &[u8]) -> Option<usize> {
 fn setup_video() {
     let (tx, _) = broadcast::channel::<Vec<u8>>(16);
 
-    let mut child = Command::new("libcamera-vid")
+    let mut child = Command::new("rpicam-vid")
         .args(["-t", "0", "--inline", "--codec", "mjpeg", "-o", "-"])
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
