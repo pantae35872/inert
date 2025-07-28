@@ -7,28 +7,19 @@
     import { scale } from "svelte/transition";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
+    let popUpOnClose: (() => void) | undefined = $state(undefined);
     let isPopUpOpen: boolean = $state(false);
 
     let direction: boolean = $state(true);
-    let image_url: string | undefined = $state(undefined);
+    let camera_url: string | undefined = $state(undefined);
 
     async function test_motor() {
         await invoke("test_motor", { direction });
     }
 
-    async function test_camera() {
-        const image_64: string = await invoke("test_camera");
-
-        const image_raw = Uint8Array.from(atob(image_64), (c) =>
-            c.charCodeAt(0),
-        );
-
-        const blob = new Blob([image_raw], { type: "image/jpeg" });
-        image_url = URL.createObjectURL(blob);
-    }
-
-    export function openPopup(snippet: Snippet) {
+    export function openPopup(snippet: Snippet, onClose?: () => void) {
         popUpSnippet = snippet;
+        popUpOnClose = onClose;
         isPopUpOpen = true;
     }
 
@@ -36,8 +27,17 @@
         await invoke("exit");
     }
 
-    function addItem() {
-        openPopup(addItemPopup);
+    async function addItem() {
+        camera_url = await invoke<string>("serve_rpi_cam");
+        openPopup(addItemPopup, async () => {
+            await invoke("stop_rpi_cam");
+            camera_url = undefined;
+        });
+    }
+
+    function onPopUpClose() {
+        popUpOnClose?.();
+        popUpOnClose = undefined;
     }
 </script>
 
@@ -50,13 +50,16 @@
     >
         <form class="add-item-form">
             <h2>Add Item</h2>
+            {#if camera_url}
+                <img src={camera_url} alt="Camera Stream" />
+            {/if}
             <button class="button" type="submit">Add</button>
         </form>
     </div>
 {/snippet}
 
 <main class="container no-select">
-    <Overlay bind:open={isPopUpOpen}>
+    <Overlay bind:open={isPopUpOpen} onClose={onPopUpClose}>
         {@render popUpSnippet?.()}
     </Overlay>
     <div
@@ -69,8 +72,6 @@
         <button class="button" style="width: 10rem;" onclick={exit}>Exit</button
         >
     </div>
-
-    <img src="http://localhost:3030/video" alt="Camera Stream" />
 
     <!-- <div class="motor-test">
         <button class="button" onclick={test_motor}>Test Motor</button>

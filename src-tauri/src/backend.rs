@@ -6,12 +6,13 @@ mod rpi;
 #[cfg(feature = "sim")]
 mod sim;
 
-pub struct BackendImpl<M: MotorBackend> {
+pub struct BackendImpl<M: MotorBackend, C: CameraBackend> {
     motor_1: Mutex<M>,
     motor_2: Mutex<M>,
+    camera: Mutex<C>,
 }
 
-impl<M: MotorBackend> BackendImpl<M> {
+impl<M: MotorBackend, C: CameraBackend> BackendImpl<M, C> {
     pub async fn motor_1(&self) -> MutexGuard<'_, M> {
         self.motor_1.lock().await
     }
@@ -19,22 +20,28 @@ impl<M: MotorBackend> BackendImpl<M> {
     pub async fn motor_2(&self) -> MutexGuard<'_, M> {
         self.motor_2.lock().await
     }
+
+    pub async fn camera(&self) -> MutexGuard<'_, C> {
+        self.camera.lock().await
+    }
 }
 
 macro_rules! define_backend {
     ($feature:literal, $modname:ident) => {
         #[cfg(feature = $feature)]
-        pub type Backend = BackendImpl<$modname::Motor>;
+        pub type Backend = BackendImpl<$modname::Motor, $modname::Camera>;
 
         #[cfg(feature = $feature)]
-        impl BackendImpl<$modname::Motor> {
+        impl BackendImpl<$modname::Motor, $modname::Camera> {
             pub fn new() -> Self {
+                use $modname::camera;
                 use $modname::motor_1;
                 use $modname::motor_2;
 
                 Self {
                     motor_1: motor_1().into(),
                     motor_2: motor_2().into(),
+                    camera: camera().into(),
                 }
             }
         }
@@ -46,6 +53,14 @@ define_backend!("rpi", rpi);
 
 pub trait MotorBackend {
     async fn rotate(&mut self, direction: MotorDirection, rotation: MotorRotation);
+}
+
+pub trait CameraBackend {
+    /// Start the camera server and return a url to that
+    async fn start(&mut self) -> String;
+
+    /// Stop the camera server
+    async fn stop(&mut self);
 }
 
 /// Respresent MotorRotation in turns
