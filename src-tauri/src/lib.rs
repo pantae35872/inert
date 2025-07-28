@@ -130,6 +130,8 @@ pub fn run() {
         let rt = tokio::runtime::Runtime::new().unwrap();
         rt.block_on(async {
             setup_video();
+
+            futures::future::pending::<()>().await;
         });
     });
 
