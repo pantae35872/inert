@@ -1,4 +1,4 @@
-use tokio::sync::{Mutex, MutexGuard, RwLock};
+use tokio::sync::{Mutex, MutexGuard};
 
 #[cfg(feature = "rpi")]
 mod rpi;

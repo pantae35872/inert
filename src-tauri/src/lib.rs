@@ -7,7 +7,7 @@ use std::{
     str::FromStr,
 };
 
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use tokio::{
     fs::File,
     io::{AsyncReadExt, AsyncWriteExt},
@@ -54,6 +54,13 @@ async fn test_camera(_app: AppHandle) -> String {
 #[tauri::command]
 async fn exit(app: AppHandle) {
     app.exit(0);
+}
+
+#[derive(serde::Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+struct DetectObjectResult {
+    name: String,
+    percentage: String,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -105,10 +112,18 @@ pub fn run() {
                         if let Some([name, percentage]) = buf
                             .split("\n")
                             .next()
-                            .map(|buf| buf.split(":"))
+                            .map(|buf| buf.split(":").map(|e| e.trim()))
                             .and_then(|mut buf| buf.next_chunk::<2>().ok())
                         {
-                            println!("Top 1, {name} {percentage}");
+                            handle
+                                .emit(
+                                    "update_detected_object",
+                                    DetectObjectResult {
+                                        name: name.to_string(),
+                                        percentage: percentage.to_string(),
+                                    },
+                                )
+                                .unwrap();
                         }
                     }
                 }

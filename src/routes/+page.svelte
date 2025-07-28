@@ -6,6 +6,7 @@
     import { invoke } from "@tauri-apps/api/core";
     import { scale } from "svelte/transition";
     import Numpad from "./Numpad.svelte";
+    import { listen } from "@tauri-apps/api/event";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let popUpOnClose: (() => void) | undefined = $state(undefined);
@@ -16,6 +17,17 @@
 
     let amount: string = $state("");
     let numpadOn: boolean = $state(false);
+
+    let detected_object: DetectObjectResult | undefined = $state(undefined);
+
+    interface DetectObjectResult {
+        name: string;
+        percentage: string;
+    }
+
+    listen<DetectObjectResult>("update-detected-object", (event) => {
+        detected_object = event.payload;
+    });
 
     async function test_motor() {
         await invoke("test_motor", { direction });
@@ -61,9 +73,18 @@
                     </div>
                 {/if}
 
+                {#if detected_object}
+                    <div class="detect-object-text">
+                        <p>{detected_object.name}</p>
+                        <p>{detected_object.percentage}</p>
+                    </div>
+                {:else}
+                    <p>Detecting...</p>
+                {/if}
                 <input
                     class="item-amount-input"
                     placeholder="Item name"
+                    value={detected_object?.percentage}
                     type="text"
                     required
                     readonly
