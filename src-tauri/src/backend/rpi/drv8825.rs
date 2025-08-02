@@ -27,9 +27,9 @@ impl Drv8825Motor {
 
         for _ in 0..steps {
             self.step_pin.set_high();
-            busy_wait_us(5000).await;
+            busy_wait_us(10000).await;
             self.step_pin.set_low();
-            busy_wait_us(5000).await;
+            busy_wait_us(10000).await;
         }
     }
 }
