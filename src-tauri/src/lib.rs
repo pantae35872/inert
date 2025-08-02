@@ -15,10 +15,29 @@ use tokio::{
 };
 
 use crate::backend::{
-    Backend, CameraBackend, CameraFrame, MotorBackend, MotorDirection, MotorRotation,
+    ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend, MotorBackend,
+    MotorDirection, MotorRotation,
 };
 
 mod backend;
+
+#[tauri::command]
+async fn test_magnet(app: AppHandle, state: bool) {
+    let backend = app.state::<Backend>();
+    backend.magnet().await.set(state).await;
+}
+
+#[tauri::command]
+async fn actuator_contract(app: AppHandle) {
+    let backend = app.state::<Backend>();
+    backend.actuator().await.contract().await;
+}
+
+#[tauri::command]
+async fn actuator_extend(app: AppHandle) {
+    let backend = app.state::<Backend>();
+    backend.actuator().await.extend().await;
+}
 
 #[tauri::command]
 async fn test_motor(app: AppHandle, direction: bool) {
@@ -69,8 +88,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             use tauri::Manager;
-
-            use crate::backend::Backend;
 
             app.manage(tauri::async_runtime::block_on(async { Backend::new() }));
 
@@ -136,7 +153,10 @@ pub fn run() {
             test_camera,
             exit,
             serve_rpi_cam,
-            stop_rpi_cam
+            stop_rpi_cam,
+            actuator_contract,
+            actuator_extend,
+            test_magnet,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

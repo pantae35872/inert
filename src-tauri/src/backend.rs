@@ -1,55 +1,78 @@
 use tokio::sync::{Mutex, MutexGuard};
 
 #[cfg(feature = "rpi")]
+pub type Backend = BackendImpl<rpi::RpiBackend>;
+
+#[cfg(feature = "rpi")]
 mod rpi;
+
+#[cfg(feature = "sim")]
+pub type Backend = BackendImpl<sim::FakeBackend>;
 
 #[cfg(feature = "sim")]
 mod sim;
 
-pub struct BackendImpl<M: MotorBackend, C: CameraBackend> {
-    motor_1: Mutex<M>,
-    motor_2: Mutex<M>,
-    camera: Mutex<C>,
+pub struct BackendImpl<B: BackendComponents> {
+    motor_1: Mutex<B::Motor>,
+    motor_2: Mutex<B::Motor>,
+    camera: Mutex<B::Camera>,
+    actuator: Mutex<B::Actuator>,
+    magnet: Mutex<B::Magnet>,
 }
 
-impl<M: MotorBackend, C: CameraBackend> BackendImpl<M, C> {
-    pub async fn motor_1(&self) -> MutexGuard<'_, M> {
+impl<B: BackendComponents> BackendImpl<B> {
+    pub fn new() -> Self {
+        Self {
+            motor_1: B::motor_1().into(),
+            motor_2: B::motor_2().into(),
+            actuator: B::actuator().into(),
+            magnet: B::magnet().into(),
+            camera: B::camera().into(),
+        }
+    }
+
+    pub async fn motor_1(&self) -> MutexGuard<'_, B::Motor> {
         self.motor_1.lock().await
     }
 
-    pub async fn motor_2(&self) -> MutexGuard<'_, M> {
+    pub async fn motor_2(&self) -> MutexGuard<'_, B::Motor> {
         self.motor_2.lock().await
     }
 
-    pub async fn camera(&self) -> MutexGuard<'_, C> {
+    pub async fn camera(&self) -> MutexGuard<'_, B::Camera> {
         self.camera.lock().await
+    }
+
+    pub async fn actuator(&self) -> MutexGuard<'_, B::Actuator> {
+        self.actuator.lock().await
+    }
+
+    pub async fn magnet(&self) -> MutexGuard<'_, B::Magnet> {
+        self.magnet.lock().await
     }
 }
 
-macro_rules! define_backend {
-    ($feature:literal, $modname:ident) => {
-        #[cfg(feature = $feature)]
-        pub type Backend = BackendImpl<$modname::Motor, $modname::Camera>;
+pub trait BackendComponents {
+    type Motor: MotorBackend;
+    type Camera: CameraBackend;
+    type Actuator: ActuatorBackend;
+    type Magnet: MagnetBackend;
 
-        #[cfg(feature = $feature)]
-        impl BackendImpl<$modname::Motor, $modname::Camera> {
-            pub fn new() -> Self {
-                use $modname::camera;
-                use $modname::motor_1;
-                use $modname::motor_2;
-
-                Self {
-                    motor_1: motor_1().into(),
-                    motor_2: motor_2().into(),
-                    camera: camera().into(),
-                }
-            }
-        }
-    };
+    fn motor_1() -> Self::Motor;
+    fn motor_2() -> Self::Motor;
+    fn actuator() -> Self::Actuator;
+    fn magnet() -> Self::Magnet;
+    fn camera() -> Self::Camera;
 }
 
-define_backend!("sim", sim);
-define_backend!("rpi", rpi);
+pub trait ActuatorBackend {
+    async fn contract(&mut self);
+    async fn extend(&mut self);
+}
+
+pub trait MagnetBackend {
+    async fn set(&mut self, on: bool);
+}
 
 pub trait MotorBackend {
     async fn rotate(&mut self, direction: MotorDirection, rotation: MotorRotation);

@@ -17,6 +17,8 @@
 
     let detected_object: DetectObjectResult | undefined = $state(undefined);
 
+    let magnet_state: boolean = false;
+
     export interface DetectObjectResult {
         name: string;
         percentage: string;
@@ -28,6 +30,19 @@
 
     async function test_motor() {
         await invoke("test_motor", { direction });
+    }
+
+    async function test_magnet() {
+        await invoke("test_magnet", { state: magnet_state });
+        magnet_state = !magnet_state;
+    }
+
+    async function test_actuator_extend() {
+        await invoke("actuator_extend");
+    }
+
+    async function test_actuator_contract() {
+        await invoke("actuator_contract");
     }
 
     export function openPopup(snippet: Snippet, onClose?: () => void) {
@@ -86,10 +101,21 @@
         >
     </div>
 
-    <!-- <div class="motor-test">
+    <div class="motor-test">
         <button class="button" onclick={test_motor}>Test Motor</button>
         <input type="checkbox" bind:checked={direction} />
-    </div> -->
+    </div>
+    <div class="actuator-test">
+        <button class="button" onclick={test_actuator_extend}
+            >Extend actuator</button
+        >
+        <button class="button" onclick={test_actuator_contract}
+            >Contract actuator</button
+        >
+    </div>
+    <div class="magnet-test">
+        <button class="button" onclick={test_magnet}>Toggle magnet</button>
+    </div>
     <div class="items-container" style="padding: 1rem;">
         {#each Array(100) as _}
             <Item

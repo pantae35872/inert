@@ -1,11 +1,56 @@
-use crate::backend::{CameraBackend, CameraFrame, MotorBackend};
+use crate::backend::{
+    ActuatorBackend, BackendComponents, CameraBackend, CameraFrame, MagnetBackend, MotorBackend,
+};
 
-pub type Motor = FakeMotor;
-pub type Camera = FakeCamera;
+pub struct FakeBackend;
+
+impl BackendComponents for FakeBackend {
+    type Motor = FakeMotor;
+    type Camera = FakeCamera;
+    type Actuator = FakeActuator;
+    type Magnet = FakeMagnet;
+
+    fn motor_1() -> FakeMotor {
+        FakeMotor(1)
+    }
+
+    fn motor_2() -> FakeMotor {
+        FakeMotor(2)
+    }
+
+    fn actuator() -> FakeActuator {
+        FakeActuator
+    }
+
+    fn magnet() -> FakeMagnet {
+        FakeMagnet
+    }
+
+    fn camera() -> FakeCamera {
+        FakeCamera
+    }
+}
+
+pub struct FakeActuator;
+
+impl ActuatorBackend for FakeActuator {
+    async fn contract(&mut self) {
+        println!("FakeActuator contract");
+    }
+    async fn extend(&mut self) {
+        println!("FakeActuator extend");
+    }
+}
+
+pub struct FakeMagnet;
+
+impl MagnetBackend for FakeMagnet {
+    async fn set(&mut self, on: bool) {
+        println!("FakeMagnet on?: {on}");
+    }
+}
 
 pub struct FakeMotor(usize);
-
-pub struct FakeCamera;
 
 impl MotorBackend for FakeMotor {
     async fn rotate(&mut self, direction: super::MotorDirection, rotation: super::MotorRotation) {
@@ -16,13 +61,7 @@ impl MotorBackend for FakeMotor {
     }
 }
 
-pub struct FakeCameraFrame;
-
-impl CameraFrame for FakeCameraFrame {
-    async fn take(self) -> Option<Vec<u8>> {
-        Some(Vec::new())
-    }
-}
+pub struct FakeCamera;
 
 impl CameraBackend for FakeCamera {
     type FrameType = FakeCameraFrame;
@@ -41,14 +80,10 @@ impl CameraBackend for FakeCamera {
     }
 }
 
-pub fn motor_1() -> FakeMotor {
-    FakeMotor(1)
-}
+pub struct FakeCameraFrame;
 
-pub fn motor_2() -> FakeMotor {
-    FakeMotor(2)
-}
-
-pub fn camera() -> FakeCamera {
-    FakeCamera
+impl CameraFrame for FakeCameraFrame {
+    async fn take(self) -> Option<Vec<u8>> {
+        Some(Vec::new())
+    }
 }
