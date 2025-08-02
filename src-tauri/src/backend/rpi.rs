@@ -5,7 +5,7 @@ use rppal::gpio::Gpio;
 use crate::backend::{
     rpi::{
         actuator::LinearActuator, cam_server::CameraServer, drv8825::Drv8825Motor,
-        magnet::ElectroMagnet,
+        limit::LimitSwitch, magnet::ElectroMagnet,
     },
     BackendComponents,
 };
@@ -21,9 +21,16 @@ const LINEAR_BACKWARD_PIN: u8 = 16;
 
 const MAGNET_PIN: u8 = 12;
 
+const LINEAR_X_L_PIN: u8 = 27;
+const LINEAR_X_R_PIN: u8 = 27;
+
+const LINEAR_Y_L_PIN: u8 = 27;
+const LINEAR_Y_R_PIN: u8 = 27;
+
 pub mod actuator;
 pub mod cam_server;
 pub mod drv8825;
+pub mod limit;
 pub mod magnet;
 
 async fn busy_wait_us(microseconds: u64) {
@@ -43,8 +50,9 @@ impl BackendComponents for RpiBackend {
     type Camera = CameraServer;
     type Actuator = LinearActuator;
     type Magnet = ElectroMagnet;
+    type Limit = LimitSwitch;
 
-    fn motor_1() -> Drv8825Motor {
+    fn motor_x() -> Drv8825Motor {
         let gpio = Gpio::new().expect("Failed to get gpio");
         Drv8825Motor::new(
             gpio.get(MOTOR1_STEP_PIN).unwrap().into_output_low(),
@@ -52,7 +60,7 @@ impl BackendComponents for RpiBackend {
         )
     }
 
-    fn motor_2() -> Drv8825Motor {
+    fn motor_y() -> Drv8825Motor {
         let gpio = Gpio::new().expect("Failed to get gpio");
 
         Drv8825Motor::new(
@@ -74,6 +82,30 @@ impl BackendComponents for RpiBackend {
         let gpio = Gpio::new().expect("Failed to get gpio");
 
         ElectroMagnet::new(gpio.get(MAGNET_PIN).unwrap().into_output_low())
+    }
+
+    fn limit_x_l() -> Self::Limit {
+        let gpio = Gpio::new().expect("Failed to get gpio");
+
+        LimitSwitch::new(gpio.get(LINEAR_X_L_PIN).unwrap().into_input_pullup())
+    }
+
+    fn limit_x_r() -> Self::Limit {
+        let gpio = Gpio::new().expect("Failed to get gpio");
+
+        LimitSwitch::new(gpio.get(LINEAR_X_R_PIN).unwrap().into_input_pullup())
+    }
+
+    fn limit_y_l() -> Self::Limit {
+        let gpio = Gpio::new().expect("Failed to get gpio");
+
+        LimitSwitch::new(gpio.get(LINEAR_Y_L_PIN).unwrap().into_input_pullup())
+    }
+
+    fn limit_y_r() -> Self::Limit {
+        let gpio = Gpio::new().expect("Failed to get gpio");
+
+        LimitSwitch::new(gpio.get(LINEAR_Y_R_PIN).unwrap().into_input_pullup())
     }
 
     fn camera() -> CameraServer {

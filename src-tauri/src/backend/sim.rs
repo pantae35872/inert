@@ -1,5 +1,6 @@
 use crate::backend::{
-    ActuatorBackend, BackendComponents, CameraBackend, CameraFrame, MagnetBackend, MotorBackend,
+    ActuatorBackend, BackendComponents, CameraBackend, CameraFrame, LimitSwitchBackend,
+    MagnetBackend, MotorBackend,
 };
 
 pub struct FakeBackend;
@@ -9,12 +10,29 @@ impl BackendComponents for FakeBackend {
     type Camera = FakeCamera;
     type Actuator = FakeActuator;
     type Magnet = FakeMagnet;
+    type Limit = FakeLimit;
 
-    fn motor_1() -> FakeMotor {
+    fn limit_y_r() -> Self::Limit {
+        FakeLimit
+    }
+
+    fn limit_y_l() -> Self::Limit {
+        FakeLimit
+    }
+
+    fn limit_x_r() -> Self::Limit {
+        FakeLimit
+    }
+
+    fn limit_x_l() -> Self::Limit {
+        FakeLimit
+    }
+
+    fn motor_x() -> FakeMotor {
         FakeMotor(1)
     }
 
-    fn motor_2() -> FakeMotor {
+    fn motor_y() -> FakeMotor {
         FakeMotor(2)
     }
 
@@ -28,6 +46,14 @@ impl BackendComponents for FakeBackend {
 
     fn camera() -> FakeCamera {
         FakeCamera
+    }
+}
+
+pub struct FakeLimit;
+
+impl LimitSwitchBackend for FakeLimit {
+    fn is_pressed(&mut self) -> bool {
+        false
     }
 }
 

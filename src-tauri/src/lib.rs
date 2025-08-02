@@ -20,6 +20,7 @@ use crate::backend::{
 };
 
 mod backend;
+mod plane;
 
 #[tauri::command]
 async fn test_magnet(app: AppHandle, state: bool) {
@@ -42,8 +43,8 @@ async fn actuator_extend(app: AppHandle) {
 #[tauri::command]
 async fn test_motor(app: AppHandle, direction: bool) {
     let rpi = app.state::<Backend>();
-    let mut motor1 = rpi.motor_1().await;
-    let mut motor2 = rpi.motor_2().await;
+    let mut motor1 = rpi.motor_x_raw().await;
+    let mut motor2 = rpi.motor_y_raw().await;
 
     tokio::join!(
         motor1.rotate(MotorDirection::from(direction), MotorRotation::full()),
