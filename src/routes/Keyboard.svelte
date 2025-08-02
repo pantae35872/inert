@@ -107,9 +107,9 @@
 
     .keyboard-row button {
         flex: 1;
-        padding: 0.3rem;
+        padding: 0.2rem;
         font-size: 1.25rem;
-        min-width: 3rem;
+        min-width: 2rem;
         border: 1px solid;
         background-color: var(--bg-color-4, #ddd);
         border-color: var(--border-color);
