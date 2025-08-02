@@ -82,8 +82,6 @@
         justify-content: center;
         align-items: center;
         pointer-events: none;
-
-        flex-wrap: wrap;
     }
 
     .add-item-wrapper > * {
