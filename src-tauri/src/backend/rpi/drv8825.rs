@@ -5,7 +5,7 @@ use tokio::time::sleep;
 
 use crate::backend::{MotorBackend, MotorDirection, MotorRotation, rpi::busy_wait_us};
 
-const STEP_BACK_AMOUNT: f32 = 0.1;
+const STEP_BACK_AMOUNT: f32 = 0.25;
 
 pub struct Drv8825Motor {
     step_pin: OutputPin,
@@ -23,6 +23,14 @@ impl Drv8825Motor {
         // control pin low
     }
 
+    #[inline(always)]
+    async fn step_one(&mut self) {
+        self.step_pin.set_high();
+        busy_wait_us(10000).await;
+        self.step_pin.set_low();
+        busy_wait_us(10000).await;
+    }
+
     async fn step(
         &mut self,
         dir: MotorDirection,
@@ -33,20 +41,14 @@ impl Drv8825Motor {
         sleep(Duration::from_millis(50)).await;
 
         for i in 0..steps {
-            self.step_pin.set_high();
-            busy_wait_us(5000).await;
-            self.step_pin.set_low();
-            busy_wait_us(5000).await;
+            self.step_one().await;
 
             if should_step_back_and_stop() {
                 let step_back_steps =
                     ((STEP_BACK_AMOUNT * self.steps_per_turn as f32).round() as usize).min(i);
 
                 for _ in 0..step_back_steps {
-                    self.step_pin.set_high();
-                    busy_wait_us(5000).await;
-                    self.step_pin.set_low();
-                    busy_wait_us(5000).await;
+                    self.step_one().await;
                 }
 
                 return i - step_back_steps;
@@ -87,9 +89,8 @@ impl MotorBackend for Drv8825Motor {
             .step(direction, steps_need, should_step_back_and_stop)
             .await;
 
-        let steps_missed = steps_need - steps_taken;
         MotorRotation {
-            turns: rotation.turns - (steps_missed * self.steps_per_turn) as f32,
+            turns: (steps_taken * self.steps_per_turn) as f32,
         }
     }
 }
