@@ -6,7 +6,7 @@ use tokio::time::sleep;
 use crate::backend::{MotorBackend, MotorDirection, MotorRotation, rpi::busy_wait_us};
 
 const STEP_BACK_AMOUNT: f32 = 0.25;
-const MOTOR_STEP_TIME: u64 = 400;
+const MOTOR_STEP_TIME: u64 = 50;
 const MOTOR_WAIT_TIME: u64 = 5000;
 
 pub struct Drv8825Motor {
