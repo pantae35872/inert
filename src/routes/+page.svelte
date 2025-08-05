@@ -24,6 +24,8 @@
     let move_to_x: number = $state(0);
     let move_to_y: number = $state(0);
 
+    let move_by_amount: number = $state(0);
+
     export interface DetectObjectResult {
         name: string;
         percentage: string;
@@ -36,6 +38,10 @@
     async function test_magnet() {
         await invoke("test_magnet", { state: magnet_state });
         magnet_state = !magnet_state;
+    }
+
+    async function homing() {
+        await invoke("homing");
     }
 
     async function test_actuator_extend() {
@@ -66,7 +72,7 @@
     async function move_by_test() {
         await invoke("move_by", {
             direction,
-            amount: 1,
+            amount: move_by_amount,
         });
     }
 
@@ -118,6 +124,8 @@
         >
     </div>
 
+    <button class="button" onclick={homing}>Homeing</button>
+
     <div class="move-by-test">
         <button class="button" onclick={move_by_test}>Move by</button>
 
@@ -126,6 +134,8 @@
                 <option value={dir}>{dir}</option>
             {/each}
         </select>
+
+        <input type="number" bind:value={move_by_amount} />
     </div>
 
     <div class="move-to-test">

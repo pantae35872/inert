@@ -42,6 +42,15 @@ async fn actuator_extend(app: AppHandle) {
     backend.actuator().await.extend().await;
 }
 
+#[tauri::command]
+async fn homing(app: AppHandle) {
+    let backend = app.state::<Backend>();
+    let plane = app.state::<Plane>();
+    let mut plane = plane.get(&backend).await;
+
+    plane.homeing().await;
+}
+
 #[derive(Serialize, Deserialize, TS)]
 #[ts(export)]
 enum Direction {
@@ -193,6 +202,7 @@ pub fn run() {
             test_magnet,
             move_by,
             move_to,
+            homing,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
