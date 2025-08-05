@@ -49,14 +49,18 @@ impl PlaneImpl<'_> {
         let mut motor_y = self.backend.motor_y().await;
 
         let mut timeout = 10;
-        while let Ok(()) = motor_x.rotate_block(MotorDirection::Clockwise, 10).await
+        while let Ok(()) = motor_x
+            .rotate_block(MotorDirection::AntiClockwise, 10)
+            .await
             && timeout > 0
         {
             timeout -= 1;
         }
 
         let mut timeout = 10;
-        while let Ok(()) = motor_y.rotate_block(MotorDirection::Clockwise, 10).await
+        while let Ok(()) = motor_y
+            .rotate_block(MotorDirection::AntiClockwise, 10)
+            .await
             && timeout > 0
         {
             timeout -= 1;
@@ -77,9 +81,9 @@ impl PlaneImpl<'_> {
         let x_moved = motor_x
             .rotate_block(
                 if ax.is_negative() {
-                    MotorDirection::Clockwise
-                } else {
                     MotorDirection::AntiClockwise
+                } else {
+                    MotorDirection::Clockwise
                 },
                 ax.unsigned_abs(),
             )
@@ -92,9 +96,9 @@ impl PlaneImpl<'_> {
         let y_moved = motor_y
             .rotate_block(
                 if ay.is_negative() {
-                    MotorDirection::Clockwise
-                } else {
                     MotorDirection::AntiClockwise
+                } else {
+                    MotorDirection::Clockwise
                 },
                 ay.unsigned_abs(),
             )

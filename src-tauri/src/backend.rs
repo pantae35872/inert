@@ -115,8 +115,8 @@ impl<'a, M: MotorBackend, S: LimitSwitchBackend> ProtectedMotor<'a, M, S> {
         let moved = self
             .motor
             .rotate(motor_direction, rotation_need, || match motor_direction {
-                MotorDirection::Clockwise => self.limit_r.is_pressed(),
-                MotorDirection::AntiClockwise => self.limit_l.is_pressed(),
+                MotorDirection::AntiClockwise => self.limit_r.is_pressed(),
+                MotorDirection::Clockwise => self.limit_l.is_pressed(),
             })
             .await;
 
