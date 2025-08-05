@@ -7,7 +7,7 @@ use crate::backend::{MotorBackend, MotorDirection, MotorRotation, rpi::busy_wait
 
 const STEP_BACK_AMOUNT: f32 = 0.25;
 const MOTOR_STEP_TIME: u64 = 200;
-const MOTOR_WAIT_TIME: u64 = 2000;
+const MOTOR_WAIT_TIME: u64 = 5000;
 
 pub struct Drv8825Motor {
     step_pin: OutputPin,
@@ -55,13 +55,17 @@ impl Drv8825Motor {
                 for _ in 0..step_back_steps {
                     let wait = self.step_one();
 
-                    while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {}
+                    while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {
+                        core::hint::spin_loop();
+                    }
                 }
 
                 return i - step_back_steps;
             }
 
-            while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {}
+            while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {
+                core::hint::spin_loop();
+            }
         }
 
         steps
