@@ -90,7 +90,7 @@ impl MotorBackend for Drv8825Motor {
             .await;
 
         MotorRotation {
-            turns: (steps_taken * self.steps_per_turn) as f32,
+            turns: (steps_taken / self.steps_per_turn) as f32,
         }
     }
 }
