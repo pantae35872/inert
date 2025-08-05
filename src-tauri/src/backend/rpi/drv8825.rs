@@ -73,6 +73,12 @@ impl MotorBackend for Drv8825Motor {
         rotation: crate::backend::MotorRotation,
         should_step_back_and_stop: impl FnMut() -> bool,
     ) -> crate::backend::MotorRotation {
+        println!(
+            "RpiMotor Dir: {}, Step: {};  turned, Direction: {direction:?}, Rotation: {rotation:?}",
+            self.dir_pin.pin(),
+            self.step_pin.pin()
+        );
+
         let steps_need = (rotation.turns * self.steps_per_turn as f32).round() as usize;
         let steps_taken = self
             .step(direction, steps_need, should_step_back_and_stop)
