@@ -34,13 +34,9 @@ pub mod limit;
 pub mod magnet;
 
 async fn busy_wait_us(microseconds: u64) {
-    tokio::task::spawn_blocking(move || {
-        let now = Instant::now();
-        let wait = Duration::from_micros(microseconds);
-        while now.elapsed() < wait {}
-    })
-    .await
-    .unwrap();
+    let now = Instant::now();
+    let wait = Duration::from_micros(microseconds);
+    while now.elapsed() < wait {}
 }
 
 pub struct RpiBackend;
