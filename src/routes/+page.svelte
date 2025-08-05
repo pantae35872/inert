@@ -7,17 +7,22 @@
     import { listen } from "@tauri-apps/api/event";
     import RequestItemQueue from "./RequestItemQueue.svelte";
     import AddItemPopup from "./AddItemPopup.svelte";
+    import { type Direction } from "../bindings/Direction";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let popUpOnClose: (() => void) | undefined = $state(undefined);
     let isPopUpOpen: boolean = $state(false);
 
-    let direction: boolean = $state(true);
     let camera_url: string | undefined = $state(undefined);
 
     let detected_object: DetectObjectResult | undefined = $state(undefined);
 
     let magnet_state: boolean = false;
+
+    let direction: Direction = $state("North");
+
+    let move_to_x: number = $state(0);
+    let move_to_y: number = $state(0);
 
     export interface DetectObjectResult {
         name: string;
@@ -27,10 +32,6 @@
     listen<DetectObjectResult>("update-detected-object", (event) => {
         detected_object = event.payload;
     });
-
-    async function test_motor() {
-        await invoke("test_motor", { direction });
-    }
 
     async function test_magnet() {
         await invoke("test_magnet", { state: magnet_state });
@@ -55,6 +56,20 @@
         await invoke("exit");
     }
 
+    async function move_to_test() {
+        await invoke("move_to", {
+            x: move_to_x,
+            y: move_to_y,
+        });
+    }
+
+    async function move_by_test() {
+        await invoke("move_by", {
+            direction,
+            amount: 1,
+        });
+    }
+
     async function addItem() {
         camera_url = await invoke<string>("serve_rpi_cam");
         openPopup(addItemPopup, async () => {
@@ -67,6 +82,8 @@
         popUpOnClose?.();
         popUpOnClose = undefined;
     }
+
+    const directions: Direction[] = ["North", "South", "East", "West"];
 
     //function openPopUpItemQueue() {
     //    openPopup(requestItemQueuePopUp);
@@ -101,10 +118,25 @@
         >
     </div>
 
-    <div class="motor-test">
-        <button class="button" onclick={test_motor}>Test Motor</button>
-        <input type="checkbox" bind:checked={direction} />
+    <div class="move-by-test">
+        <button class="button" onclick={move_by_test}>Move by</button>
+
+        <select id="dir" bind:value={direction}>
+            {#each directions as dir}
+                <option value={dir}>{dir}</option>
+            {/each}
+        </select>
     </div>
+
+    <div class="move-to-test">
+        <button class="button" onclick={move_to_test}>Move to</button>
+
+        <b>X</b>
+        <input type="number" bind:value={move_to_x} />
+        <b>Y</b>
+        <input type="number" bind:value={move_to_y} />
+    </div>
+
     <div class="actuator-test">
         <button class="button" onclick={test_actuator_extend}
             >Extend actuator</button

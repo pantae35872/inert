@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use thiserror::Error;
 use tokio::sync::{Mutex, MutexGuard};
 
@@ -99,20 +101,33 @@ impl<'a, M: MotorBackend, S: LimitSwitchBackend> ProtectedMotor<'a, M, S> {
         motor_direction: MotorDirection,
         amount: usize,
     ) -> Result<(), ProtectedMotorError> {
-        for i in 0..amount {
-            if match motor_direction {
+        if amount == 0 {
+            return Ok(());
+        }
+
+        // FIXME: assuming 1 block is 0.25 for now
+        const BLOCK_TURN: f32 = 0.25;
+
+        let rotation_need = MotorRotation {
+            turns: BLOCK_TURN * amount as f32,
+        };
+
+        let moved = self
+            .motor
+            .rotate(motor_direction, rotation_need, || match motor_direction {
                 MotorDirection::Clockwise => self.limit_r.is_pressed(),
                 MotorDirection::AntiClockwise => self.limit_l.is_pressed(),
-            } {
-                return Err(ProtectedMotorError::LimitHit {
-                    left_over: amount - i,
-                });
-            }
-            self.motor
-                .rotate(motor_direction, MotorRotation::quarter()) // TODO: ASSUMING 1 BLOCK
-                // IS a quater
-                .await;
+            })
+            .await;
+
+        let missed_turns = rotation_need.turns - moved.turns;
+        assert!(missed_turns >= 0.0, "Missed turn shouldn't be negative");
+        if missed_turns > 0.0 {
+            return Err(ProtectedMotorError::LimitHit {
+                left_over: (missed_turns as f32 / BLOCK_TURN).round() as usize,
+            });
         }
+
         Ok(())
     }
 }
@@ -150,7 +165,12 @@ pub trait MagnetBackend {
 }
 
 pub trait MotorBackend {
-    async fn rotate(&mut self, direction: MotorDirection, rotation: MotorRotation);
+    async fn rotate(
+        &mut self,
+        direction: MotorDirection,
+        rotation: MotorRotation,
+        should_step_back_and_stop: impl FnMut() -> bool,
+    ) -> MotorRotation;
 }
 
 pub trait CameraFrame {
@@ -174,7 +194,7 @@ pub trait CameraBackend {
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(transparent)]
 pub struct MotorRotation {
-    turns: f32, // In turns, 0.0 to N.0 (e.g. 0.75 = 270°)
+    pub turns: f32, // In turns, 0.0 to N.0 (e.g. 0.75 = 270°)
 }
 
 impl MotorRotation {
@@ -188,10 +208,6 @@ impl MotorRotation {
 
     pub fn quarter() -> Self {
         Self { turns: 0.25 }
-    }
-
-    pub fn raw(turns: f32) -> Self {
-        Self { turns }
     }
 }
 
@@ -219,6 +235,17 @@ impl From<bool> for MotorDirection {
             Self::AntiClockwise
         } else {
             Self::Clockwise
+        }
+    }
+}
+
+impl Not for MotorDirection {
+    type Output = MotorDirection;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Self::Clockwise => Self::AntiClockwise,
+            Self::AntiClockwise => Self::Clockwise,
         }
     }
 }

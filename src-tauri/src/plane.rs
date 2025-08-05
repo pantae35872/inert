@@ -1,64 +1,79 @@
+use tokio::sync::{Mutex, MutexGuard};
+
 use crate::backend::{Backend, MotorDirection, ProtectedMotorError};
 
-struct Plane {
-    cur_x: usize,
-    cur_y: usize,
+pub struct Plane {
+    plane: Mutex<PlaneData>,
 }
 
 impl Plane {
     pub async fn new(backend: &Backend) -> Self {
-        let mut motor_x = backend.motor_x().await;
-        let mut motor_y = backend.motor_y().await;
-        let mut timeout = 100;
-        while let Ok(()) = motor_x.rotate_block(MotorDirection::Clockwise, 10).await
-            && timeout <= 0
-        {
-            timeout -= 1;
+        let data = Mutex::new(PlaneData::default());
+        PlaneImpl {
+            backend,
+            data: data.lock().await,
         }
+        .homeing()
+        .await;
 
-        let mut timeout = 100;
-        while let Ok(()) = motor_y.rotate_block(MotorDirection::Clockwise, 10).await
-            && timeout <= 0
-        {
-            timeout -= 1;
-        }
-
-        Self { cur_x: 0, cur_y: 0 }
+        Self { plane: data }
     }
 
+    pub async fn get<'a>(&'a self, backend: &'a Backend) -> PlaneImpl<'a> {
+        PlaneImpl {
+            backend,
+            data: self.plane.lock().await,
+        }
+    }
+}
+
+#[derive(Debug, Default)]
+struct PlaneData {
+    cur_x: usize,
+    cur_y: usize,
+}
+
+pub struct PlaneImpl<'a> {
+    backend: &'a Backend,
+    data: MutexGuard<'a, PlaneData>,
+}
+
+impl PlaneImpl<'_> {
     pub fn current_x_y(&self) -> (usize, usize) {
-        (self.cur_x, self.cur_y)
+        (self.data.cur_x, self.data.cur_y)
     }
 
-    pub async fn reset(&mut self, backend: &Backend) {
-        let mut motor_x = backend.motor_x().await;
-        let mut motor_y = backend.motor_y().await;
+    /// Home the plane to 0, 0
+    pub async fn homeing(&mut self) {
+        let mut motor_x = self.backend.motor_x().await;
+        let mut motor_y = self.backend.motor_y().await;
 
-        let mut timeout = 100;
+        let mut timeout = 10;
         while let Ok(()) = motor_x.rotate_block(MotorDirection::Clockwise, 10).await
-            && timeout <= 0
+            && timeout > 0
         {
             timeout -= 1;
         }
 
-        let mut timeout = 100;
+        let mut timeout = 10;
         while let Ok(()) = motor_y.rotate_block(MotorDirection::Clockwise, 10).await
-            && timeout <= 0
+            && timeout > 0
         {
             timeout -= 1;
         }
 
-        self.cur_x = 0;
-        self.cur_y = 0;
+        self.data.cur_x = 0;
+        self.data.cur_y = 0;
     }
 
     /// Add the provide x and y with the current position,
     /// # Note
-    /// this does not move the plane to x and y its increment it
-    pub async fn move_with(&mut self, backend: &Backend, ax: isize, ay: isize) {
-        let mut motor_x = backend.motor_x().await;
-        let mut motor_y = backend.motor_y().await;
+    /// Moves the plane relative to the current position by (ax, ay), not to an absolute position.
+    pub async fn move_with(&mut self, ax: isize, ay: isize) {
+        let mut motor_x = self.backend.motor_x().await;
+        let mut motor_y = self.backend.motor_y().await;
 
+        // TODO: use join to run this simultaneously maybe?
         let x_moved = motor_x
             .rotate_block(
                 if ax.is_negative() {
@@ -89,17 +104,15 @@ impl Plane {
                 ay - left_over as isize * ay.signum()
             });
 
-        self.cur_x = (self.cur_x as isize + x_moved).max(0) as usize;
-        self.cur_y = (self.cur_y as isize + y_moved).max(0) as usize;
+        self.data.cur_x = (self.data.cur_x as isize + x_moved).max(0) as usize;
+        self.data.cur_y = (self.data.cur_y as isize + y_moved).max(0) as usize;
     }
 
-    pub async fn set(&mut self, backend: &Backend, x: usize, y: usize) {
+    pub async fn move_to(&mut self, x: usize, y: usize) {
         self.move_with(
-            backend,
-            x as isize - self.cur_x as isize,
-            y as isize - self.cur_y as isize,
+            x as isize - self.data.cur_x as isize,
+            y as isize - self.data.cur_y as isize,
         )
         .await;
     }
 }
-

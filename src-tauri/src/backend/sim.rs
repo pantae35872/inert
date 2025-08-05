@@ -1,6 +1,6 @@
 use crate::backend::{
     ActuatorBackend, BackendComponents, CameraBackend, CameraFrame, LimitSwitchBackend,
-    MagnetBackend, MotorBackend,
+    MagnetBackend, MotorBackend, MotorDirection, MotorRotation,
 };
 
 pub struct FakeBackend;
@@ -79,11 +79,17 @@ impl MagnetBackend for FakeMagnet {
 pub struct FakeMotor(usize);
 
 impl MotorBackend for FakeMotor {
-    async fn rotate(&mut self, direction: super::MotorDirection, rotation: super::MotorRotation) {
+    async fn rotate(
+        &mut self,
+        direction: MotorDirection,
+        rotation: MotorRotation,
+        should_step_back_and_stop: impl FnMut() -> bool,
+    ) -> MotorRotation {
         println!(
             "FakeMotor {} turned, Direction: {direction:?}, Rotation: {rotation:?}",
             self.0
         );
+        rotation
     }
 }
 

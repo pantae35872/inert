@@ -7,16 +7,18 @@ use std::{
     str::FromStr,
 };
 
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::{
     fs::File,
     io::{AsyncReadExt, AsyncWriteExt},
     process::Command,
 };
+use ts_rs::TS;
 
-use crate::backend::{
-    ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend, MotorBackend,
-    MotorDirection, MotorRotation,
+use crate::{
+    backend::{ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend},
+    plane::Plane,
 };
 
 mod backend;
@@ -40,16 +42,41 @@ async fn actuator_extend(app: AppHandle) {
     backend.actuator().await.extend().await;
 }
 
-#[tauri::command]
-async fn test_motor(app: AppHandle, direction: bool) {
-    let rpi = app.state::<Backend>();
-    let mut motor1 = rpi.motor_x_raw().await;
-    let mut motor2 = rpi.motor_y_raw().await;
+#[derive(Serialize, Deserialize, TS)]
+#[ts(export)]
+enum Direction {
+    North,
+    South,
+    East,
+    West,
+}
 
-    tokio::join!(
-        motor1.rotate(MotorDirection::from(direction), MotorRotation::full()),
-        motor2.rotate(MotorDirection::from(!direction), MotorRotation::half())
-    );
+#[tauri::command]
+async fn move_to(app: AppHandle, x: usize, y: usize) {
+    let backend = app.state::<Backend>();
+    let plane = app.state::<Plane>();
+    let mut plane = plane.get(&backend).await;
+
+    println!("Moving to posisiton: {x}, {y}");
+    plane.move_to(x, y).await;
+    let (x, y) = plane.current_x_y();
+    println!("Current posisiton: {x}, {y}");
+}
+
+#[tauri::command]
+async fn move_by(app: AppHandle, direction: Direction, amount: usize) {
+    let amount = amount as isize;
+    let backend = app.state::<Backend>();
+    let plane = app.state::<Plane>();
+    let mut plane = plane.get(&backend).await;
+    match direction {
+        Direction::North => plane.move_with(0, amount).await,
+        Direction::South => plane.move_with(0, -amount).await,
+        Direction::East => plane.move_with(amount, 0).await,
+        Direction::West => plane.move_with(-amount, 0).await,
+    }
+    let (x, y) = plane.current_x_y();
+    println!("Current posisiton: {x}, {y}");
 }
 
 #[tauri::command]
@@ -90,7 +117,13 @@ pub fn run() {
         .setup(|app| {
             use tauri::Manager;
 
-            app.manage(tauri::async_runtime::block_on(async { Backend::new() }));
+            let (backend, plane) = tauri::async_runtime::block_on(async {
+                let backend = Backend::new();
+                let plane = Plane::new(&backend).await;
+                (backend, plane)
+            });
+            app.manage(backend);
+            app.manage(plane);
 
             let handle = app.handle().clone();
 
@@ -102,6 +135,7 @@ pub fn run() {
                     .join("rpi-recognition"),
             };
 
+            // TODO: Move this somewhere else
             tauri::async_runtime::spawn(async move {
                 let backend = handle.state::<Backend>();
                 loop {
@@ -150,7 +184,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            test_motor,
             test_camera,
             exit,
             serve_rpi_cam,
@@ -158,6 +191,8 @@ pub fn run() {
             actuator_contract,
             actuator_extend,
             test_magnet,
+            move_by,
+            move_to,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
