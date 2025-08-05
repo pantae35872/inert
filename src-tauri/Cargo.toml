@@ -20,6 +20,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 default = ["rpi"]
 rpi = []
 sim = []
+logging = []
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.

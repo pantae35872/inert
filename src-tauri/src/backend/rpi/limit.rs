@@ -16,10 +16,14 @@ impl LimitSwitchBackend for LimitSwitch {
     fn is_pressed(&mut self) -> bool {
         let limit_pressed = matches!(self.limit_pin_in.read(), Level::Low);
 
-        println!(
-            "Limit pin {}, readed; is_pressed: {limit_pressed}",
-            self.limit_pin_in.pin()
-        );
+        #[cfg(feature = "logging")]
+        {
+            println!(
+                "Limit pin {}, readed; is_pressed: {limit_pressed}",
+                self.limit_pin_in.pin()
+            );
+        }
+
         limit_pressed
     }
 }
