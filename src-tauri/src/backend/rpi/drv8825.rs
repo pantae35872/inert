@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use rppal::gpio::{Level, OutputPin};
 use tokio::time::sleep;
@@ -6,6 +6,8 @@ use tokio::time::sleep;
 use crate::backend::{MotorBackend, MotorDirection, MotorRotation, rpi::busy_wait_us};
 
 const STEP_BACK_AMOUNT: f32 = 0.25;
+const MOTOR_STEP_TIME: u64 = 200;
+const MOTOR_WAIT_TIME: u64 = 2000;
 
 pub struct Drv8825Motor {
     step_pin: OutputPin,
@@ -24,11 +26,11 @@ impl Drv8825Motor {
     }
 
     #[inline(always)]
-    async fn step_one(&mut self) {
+    fn step_one(&mut self) -> Instant {
         self.step_pin.set_high();
-        busy_wait_us(200).await;
+        busy_wait_us(MOTOR_STEP_TIME);
         self.step_pin.set_low();
-        busy_wait_us(200).await;
+        Instant::now()
     }
 
     async fn step(
@@ -41,7 +43,7 @@ impl Drv8825Motor {
         sleep(Duration::from_millis(50)).await;
 
         for i in 0..steps {
-            self.step_one().await;
+            let wait = self.step_one();
 
             if should_step_back_and_stop() {
                 let step_back_steps =
@@ -51,11 +53,15 @@ impl Drv8825Motor {
                 sleep(Duration::from_millis(50)).await;
 
                 for _ in 0..step_back_steps {
-                    self.step_one().await;
+                    let wait = self.step_one();
+
+                    while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {}
                 }
 
                 return i - step_back_steps;
             }
+
+            while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {}
         }
 
         steps

@@ -33,7 +33,7 @@ pub mod drv8825;
 pub mod limit;
 pub mod magnet;
 
-async fn busy_wait_us(microseconds: u64) {
+fn busy_wait_us(microseconds: u64) {
     let now = Instant::now();
     let wait = Duration::from_micros(microseconds);
     while now.elapsed() < wait {}
