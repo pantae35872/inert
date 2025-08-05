@@ -14,6 +14,6 @@ impl LimitSwitch {
 
 impl LimitSwitchBackend for LimitSwitch {
     fn is_pressed(&mut self) -> bool {
-        matches!(self.limit_pin_in.read(), Level::High)
+        matches!(self.limit_pin_in.read(), Level::Low)
     }
 }
