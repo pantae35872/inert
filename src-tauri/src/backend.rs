@@ -120,9 +120,8 @@ impl<'a, M: MotorBackend, S: LimitSwitchBackend> ProtectedMotor<'a, M, S> {
             })
             .await;
 
-        let missed_turns = rotation_need.turns - moved.turns;
-        assert!(missed_turns >= 0.0, "Missed turn shouldn't be negative");
-        if missed_turns > 0.0 {
+        let missed_turns = (rotation_need.turns - moved.turns).max(0.0);
+        if missed_turns > self.motor.epsilon() {
             return Err(ProtectedMotorError::LimitHit {
                 left_over: (missed_turns as f32 / BLOCK_TURN).round() as usize,
             });
@@ -171,6 +170,10 @@ pub trait MotorBackend {
         rotation: MotorRotation,
         should_step_back_and_stop: impl FnMut() -> bool,
     ) -> MotorRotation;
+
+    fn epsilon(&self) -> f32 {
+        0.0
+    }
 }
 
 pub trait CameraFrame {

@@ -93,7 +93,11 @@ impl MotorBackend for Drv8825Motor {
             .await;
 
         MotorRotation {
-            turns: (steps_taken / self.steps_per_turn) as f32,
+            turns: steps_taken as f32 / self.steps_per_turn as f32,
         }
+    }
+
+    fn epsilon(&self) -> f32 {
+        0.5 / self.steps_per_turn as f32
     }
 }
