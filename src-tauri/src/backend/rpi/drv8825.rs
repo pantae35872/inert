@@ -26,9 +26,9 @@ impl Drv8825Motor {
     #[inline(always)]
     async fn step_one(&mut self) {
         self.step_pin.set_high();
-        busy_wait_us(10000).await;
+        sleep(Duration::from_millis(10)).await;
         self.step_pin.set_low();
-        busy_wait_us(10000).await;
+        sleep(Duration::from_millis(10)).await;
     }
 
     async fn step(
@@ -46,6 +46,9 @@ impl Drv8825Motor {
             if should_step_back_and_stop() {
                 let step_back_steps =
                     ((STEP_BACK_AMOUNT * self.steps_per_turn as f32).round() as usize).min(i);
+
+                self.dir_pin.write((!dir).into());
+                sleep(Duration::from_millis(50)).await;
 
                 for _ in 0..step_back_steps {
                     self.step_one().await;
