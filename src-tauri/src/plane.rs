@@ -90,7 +90,7 @@ impl PlaneImpl<'_> {
             .await
             .map(|_| ax)
             .unwrap_or_else(|ProtectedMotorError::LimitHit { left_over }| {
-                (ax - left_over as isize) * ax.signum()
+                (ax.unsigned_abs() - left_over) as isize * ax.signum()
             });
 
         let y_moved = motor_y
@@ -105,7 +105,7 @@ impl PlaneImpl<'_> {
             .await
             .map(|_| ay)
             .unwrap_or_else(|ProtectedMotorError::LimitHit { left_over }| {
-                (ay - left_over as isize) * ay.signum()
+                (ay.unsigned_abs() - left_over) as isize * ay.signum()
             });
 
         self.data.cur_x = (self.data.cur_x as isize + x_moved).max(0) as usize;
