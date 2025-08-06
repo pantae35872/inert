@@ -1,63 +1,21 @@
 use std::collections::VecDeque;
 
-use crate::inventory::db::{InventoryDB, PhysicalItem};
-
-use serde::{Deserialize, Serialize};
+use crate::inventory::{Rectangle, db::Database};
 
 #[cfg(feature = "visualization")]
 pub mod visualizer;
 
 #[derive(Debug)]
 pub struct ItemAllocator {
-    free_list: Vec<FreeSpace>,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct Rectangle {
-    x: usize,
-    y: usize,
-    width: usize,
-    height: usize,
-}
-
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "visualization", derive(Serialize, Deserialize))]
-pub struct FreeSpace {
-    x: usize,
-    y: usize,
-
-    width: usize,
-    height: usize,
-}
-
-impl From<Rectangle> for FreeSpace {
-    fn from(value: Rectangle) -> Self {
-        Self {
-            x: value.x,
-            y: value.y,
-            width: value.width,
-            height: value.height,
-        }
-    }
-}
-
-impl From<FreeSpace> for Rectangle {
-    fn from(value: FreeSpace) -> Self {
-        Self {
-            x: value.x,
-            y: value.y,
-            width: value.width,
-            height: value.height,
-        }
-    }
+    free_list: Vec<Rectangle>,
 }
 
 impl ItemAllocator {
     const WIDTH: usize = 400;
     const HEIGHT: usize = 400;
 
-    pub async fn new(db: &InventoryDB) -> Self {
-        let mut free_list = vec![FreeSpace {
+    pub async fn new(db: &Database) -> Self {
+        let mut free_list = vec![Rectangle {
             x: 0,
             y: 0,
             width: Self::WIDTH,
@@ -70,7 +28,7 @@ impl ItemAllocator {
             let mut new_list = Vec::new();
 
             for space in free_list.drain(..) {
-                let mut split = subtract_item(&space, &item.data);
+                let mut split = subtract_rect(&space, &item.data.rect);
                 new_list.append(&mut split);
             }
 
@@ -86,27 +44,6 @@ impl ItemAllocator {
         }
 
         Self { free_list }
-    }
-
-    fn test_alloc(
-        &mut self,
-        width: usize,
-        height: usize,
-        custom_item: &mut Vec<PhysicalItem>,
-        name: impl ToString,
-    ) -> Rectangle {
-        let area = self.allocate(width, height).expect("Fails to allocate");
-        custom_item.push(PhysicalItem {
-            pos_x: area.x,
-            pos_y: area.y,
-            width: area.width,
-            height: area.height,
-
-            image_path: String::new(),
-            display_name: name.to_string(),
-        });
-
-        area
     }
 
     pub fn deallocate(&mut self, rect: Rectangle) {
@@ -205,76 +142,6 @@ impl ItemAllocator {
     }
 }
 
-fn subtract_item(space: &FreeSpace, item: &PhysicalItem) -> Vec<FreeSpace> {
-    let mut result = Vec::new();
-
-    let item_right = item.pos_x + item.width;
-    let item_bottom = item.pos_y + item.height;
-    let space_right = space.x + space.width;
-    let space_bottom = space.y + space.height;
-
-    // Check if they intersect
-    if item.pos_x >= space_right
-        || item_right <= space.x
-        || item.pos_y >= space_bottom
-        || item_bottom <= space.y
-    {
-        // No intersection, return the original space
-        result.push(space.clone());
-        return result;
-    }
-
-    // Top slice
-    if item.pos_y > space.y {
-        result.push(FreeSpace {
-            x: space.x,
-            y: space.y,
-            width: space.width,
-            height: item.pos_y - space.y,
-        });
-    }
-
-    // Bottom slice
-    if item_bottom < space_bottom {
-        result.push(FreeSpace {
-            x: space.x,
-            y: item_bottom,
-            width: space.width,
-            height: space_bottom - item_bottom,
-        });
-    }
-
-    // Left slice
-    if item.pos_x > space.x {
-        let top = item.pos_y.max(space.y);
-        let bottom = item_bottom.min(space_bottom);
-        if bottom > top {
-            result.push(FreeSpace {
-                x: space.x,
-                y: top,
-                width: item.pos_x - space.x,
-                height: bottom - top,
-            });
-        }
-    }
-
-    // Right slice
-    if item_right < space_right {
-        let top = item.pos_y.max(space.y);
-        let bottom = item_bottom.min(space_bottom);
-        if bottom > top {
-            result.push(FreeSpace {
-                x: item_right,
-                y: top,
-                width: space_right - item_right,
-                height: bottom - top,
-            });
-        }
-    }
-
-    result
-}
-
 /// Subtracts `sub` from `rect`, returns the list of remaining rectangles
 fn subtract_rect(rect: &Rectangle, sub: &Rectangle) -> Vec<Rectangle> {
     let mut result = Vec::new();
@@ -331,7 +198,7 @@ fn subtract_rect(rect: &Rectangle, sub: &Rectangle) -> Vec<Rectangle> {
     result
 }
 
-fn get_overlap(a: &Rectangle, b: &FreeSpace) -> Option<Rectangle> {
+fn get_overlap(a: &Rectangle, b: &Rectangle) -> Option<Rectangle> {
     let x1 = a.x.max(b.x);
     let y1 = a.y.max(b.y);
     let x2 = (a.x + a.width).min(b.x + b.width);

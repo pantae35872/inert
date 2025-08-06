@@ -1,14 +1,14 @@
 use eframe::{Frame, egui};
 use egui::{Color32, PopupAnchor, Rect, RichText, Stroke};
 
-use crate::inventory::{allocator::FreeSpace, db::PhysicalItem};
+use crate::inventory::{Item, Rectangle};
 
 struct VisualizerApp {
-    items: Vec<PhysicalItem>,
-    free_list: Vec<FreeSpace>,
+    items: Vec<Item>,
+    free_list: Vec<Rectangle>,
 }
 
-pub fn visualize(items: Vec<PhysicalItem>, free_list: Vec<FreeSpace>) {
+pub fn visualize(items: Vec<Item>, free_list: Vec<Rectangle>) {
     println!("Visualizing items: {items:?} free_list: {free_list:?}");
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
@@ -22,8 +22,8 @@ pub fn visualize(items: Vec<PhysicalItem>, free_list: Vec<FreeSpace>) {
 impl VisualizerApp {
     pub fn new(
         _cc: &eframe::CreationContext<'_>,
-        items: Vec<PhysicalItem>,
-        free_list: Vec<FreeSpace>,
+        items: Vec<Item>,
+        free_list: Vec<Rectangle>,
     ) -> Self {
         Self { items, free_list }
     }
@@ -48,8 +48,8 @@ impl eframe::App for VisualizerApp {
             // Draw Items (Green)
             for item in &self.items {
                 let rect = Rect::from_min_size(
-                    rect.left_top() + egui::vec2(item.pos_x as f32, item.pos_y as f32) * scale,
-                    egui::vec2(item.width as f32, item.height as f32) * scale,
+                    rect.left_top() + egui::vec2(item.rect.x as f32, item.rect.y as f32) * scale,
+                    egui::vec2(item.rect.width as f32, item.rect.height as f32) * scale,
                 );
 
                 painter.rect_filled(rect, 0.0, egui::Color32::LIGHT_RED);
@@ -61,7 +61,11 @@ impl eframe::App for VisualizerApp {
                     rect,
                     format!(
                         "Item \"{}\", X: {}, Y: {}, Width: {}, Height: {}",
-                        item.display_name, item.pos_x, item.pos_y, item.width, item.height
+                        item.display_name,
+                        item.rect.x,
+                        item.rect.y,
+                        item.rect.width,
+                        item.rect.height
                     ),
                 ));
             }
