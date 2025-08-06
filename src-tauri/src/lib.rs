@@ -1,4 +1,5 @@
 #![feature(iter_next_chunk)]
+#![feature(iter_collect_into)]
 
 use std::{
     env,

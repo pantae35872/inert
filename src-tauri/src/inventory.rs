@@ -12,18 +12,6 @@ pub struct Inventory {
 impl Inventory {
     pub async fn new() -> Self {
         let db = InventoryDB::new().await;
-        db.add_item(
-            "Resistor",
-            &db::PhysicalItem {
-                pos_x: 100,
-                pos_y: 60,
-                width: 50,
-                height: 50,
-                image_path: String::new(),
-                display_name: "Resistor".to_string(),
-            },
-        )
-        .await;
         let allocator = ItemAllocator::new(&db).await;
         Self { db, allocator }
     }
