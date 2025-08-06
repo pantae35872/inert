@@ -19,8 +19,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [features]
 default = ["rpi"]
 rpi = []
-sim = []
+sim = ["visualization"]
 logging = []
+visualization = ["eframe", "egui"]
 
 [profile.dev]
 incremental = true # Compile your binary in smaller steps.
@@ -53,4 +54,8 @@ async-stream = "0.3.6"
 futures = "0.3.31"
 bytes = "1.10.1"
 ts-rs = "11.0.1"
-
+tokio-rusqlite = { version = "0.6.0", features = ["bundled"] }
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+directories-next = "2.0.0"
+egui = { version = "0.32.0", optional = true }
+eframe = { version = "0.32.0", optional = true }

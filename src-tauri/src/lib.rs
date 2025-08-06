@@ -18,10 +18,12 @@ use ts_rs::TS;
 
 use crate::{
     backend::{ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend},
+    inventory::{Inventory, visualizer::visualize_child},
     plane::Plane,
 };
 
 mod backend;
+mod inventory;
 mod plane;
 
 #[tauri::command]
@@ -121,18 +123,30 @@ struct DetectObjectResult {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let mut args = env::args();
+    let _exe = args.next();
+
+    match args.next().as_deref() {
+        Some("child") => {
+            visualize_child(&args.next().expect("No visualize data passed in."));
+            return;
+        }
+        _ => {}
+    };
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             use tauri::Manager;
 
-            let (backend, plane) = tauri::async_runtime::block_on(async {
+            let (backend, plane, inventory) = tauri::async_runtime::block_on(async {
                 let backend = Backend::new();
                 let plane = Plane::new(&backend).await;
-                (backend, plane)
+                (backend, plane, Inventory::new().await)
             });
             app.manage(backend);
             app.manage(plane);
+            app.manage(inventory);
 
             let handle = app.handle().clone();
 
