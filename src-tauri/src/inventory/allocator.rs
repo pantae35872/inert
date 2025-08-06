@@ -77,25 +77,15 @@ impl ItemAllocator {
             free_list = new_list;
         }
 
-        let mut result = Self { free_list };
-        let mut custom_item = Vec::new();
-
-        for i in 0..30 {
-            result.test_alloc(50, 50, &mut custom_item, format_args!("Item {i}"));
-        }
-
-        result.test_alloc(80, 80, &mut custom_item, "Item BIG");
-
-        items
-            .iter()
-            .map(|e| e.clone().into_inner())
-            .collect_into(&mut custom_item);
         #[cfg(feature = "visualization")]
         {
-            super::visualizer::visualize(custom_item, result.free_list.clone());
+            super::visualizer::visualize(
+                items.iter().map(|e| e.clone().into_inner()).collect(),
+                free_list.clone(),
+            );
         }
 
-        result
+        Self { free_list }
     }
 
     fn test_alloc(
@@ -104,7 +94,7 @@ impl ItemAllocator {
         height: usize,
         custom_item: &mut Vec<PhysicalItem>,
         name: impl ToString,
-    ) {
+    ) -> Rectangle {
         let area = self.allocate(width, height).expect("Fails to allocate");
         custom_item.push(PhysicalItem {
             pos_x: area.x,
@@ -115,6 +105,13 @@ impl ItemAllocator {
             image_path: String::new(),
             display_name: name.to_string(),
         });
+
+        area
+    }
+
+    pub fn deallocate(&mut self, rect: Rectangle) {
+        // TODO: VERIFY?
+        self.free_list.push(rect.into());
     }
 
     /// Allocate a new area and returns the x y position
