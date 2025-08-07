@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use directories_next::ProjectDirs;
 use rand::{Rng, distr::Alphanumeric};
@@ -7,6 +7,7 @@ use tokio::{
     fs::{File, create_dir},
     io::AsyncWriteExt,
 };
+use warp::Filter;
 
 use crate::inventory::{
     Rectangle,
@@ -39,6 +40,33 @@ impl Database {
                 .await
                 .expect("Create image directory failed");
         }
+
+        let image_db_2 = image_db.clone();
+        tokio::spawn(async move {
+            // Route: GET /images/{filename...}
+            let images_route = warp::path("images").and(warp::path::tail()).and_then(
+                move |tail: warp::path::Tail| {
+                    let base_dir = image_db_2.to_str().unwrap().to_string();
+                    async move {
+                        let full_path = Path::new(&base_dir).join(tail.as_str());
+
+                        if full_path.exists() && full_path.is_file() {
+                            Ok(warp::reply::with_header(
+                                tokio::fs::read(full_path)
+                                    .await
+                                    .unwrap_or_else(|_| Vec::new()),
+                                "Content-Type",
+                                "image/jpeg",
+                            )) as Result<_, warp::Rejection>
+                        } else {
+                            Err(warp::reject::not_found())
+                        }
+                    }
+                },
+            );
+
+            warp::serve(images_route).run(([127, 0, 0, 1], 3031)).await;
+        });
 
         Self {
             db: InventoryDB::new().await,
@@ -74,7 +102,7 @@ impl Database {
                 &super::Item {
                     rect,
                     display_name: name.as_ref().to_string(),
-                    image_path: image_path.to_str().unwrap().to_string(),
+                    image_id: image_name,
                 },
             )
             .await

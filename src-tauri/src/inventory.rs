@@ -85,7 +85,7 @@ impl<'a> InventoryImpl<'a> {
             .iter()
             .map(|result| DisplayItem {
                 id: result.id,
-                image_path: result.image_path.clone(),
+                image_path: result.image_id.clone(),
                 display_name: result.display_name.clone(),
                 amount: result.amount,
             })
@@ -130,7 +130,7 @@ impl<'a> InventoryImpl<'a> {
 pub struct Item {
     pub rect: Rectangle,
 
-    pub image_path: String,
+    pub image_id: String,
     pub display_name: String,
 }
 
