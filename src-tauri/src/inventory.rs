@@ -96,7 +96,7 @@ impl<'a> InventoryImpl<'a> {
         let mut plane = self.plane.get(Arc::clone(&self.backend)).await;
 
         plane.move_to(plane.width(), plane.height()).await;
-        self.backend.actuator().await.contract().await;
+        self.backend.actuator().await.extend().await;
         self.backend.magnet().await.set(false).await;
 
         self.data.allocator.allocate(15, 15)
@@ -112,7 +112,6 @@ impl<'a> InventoryImpl<'a> {
             self.data.db.add_item(name, amount, rect, frame).await;
         }
 
-        actuator.extend().await;
         magnet.set(true).await;
         actuator.contract().await;
 
