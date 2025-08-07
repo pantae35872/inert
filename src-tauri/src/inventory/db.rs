@@ -49,6 +49,7 @@ impl Database {
                     let base_dir = image_db_2.clone();
                     async move {
                         let full_path = base_dir.join(tail.as_str());
+                        todo!("{full_path}");
 
                         if full_path.exists() && full_path.is_file() {
                             Ok(warp::reply::with_header(
