@@ -19,7 +19,7 @@ use ts_rs::TS;
 
 use crate::{
     backend::{ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend},
-    inventory::{Inventory, visualizer::visualize_child},
+    inventory::Inventory,
     plane::Plane,
 };
 
@@ -129,7 +129,12 @@ pub fn run() {
 
     match args.next().as_deref() {
         Some("child") => {
-            visualize_child(&args.next().expect("No visualize data passed in."));
+            #[cfg(feature = "visualization")]
+            {
+                crate::inventory::visualizer::visualize_child(
+                    &args.next().expect("No visualize data passed in."),
+                );
+            }
             return;
         }
         _ => {}
