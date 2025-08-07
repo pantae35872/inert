@@ -2,16 +2,14 @@
     import Item from "./Item.svelte";
     import "../style.css";
     import Overlay from "./Overlay.svelte";
-    import { onMount, type Snippet } from "svelte";
+    import { onMount, unmount, type Snippet } from "svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
     import RequestItemQueue from "./RequestItemQueue.svelte";
     import AddItemPopup from "./AddItemPopup.svelte";
     import { type Direction } from "../bindings/Direction";
     import { type DisplayItem } from "../bindings/DisplayItem";
-    import type { PrepareAddItemStatus } from "../bindings/PrepareAddItemStatus";
     import type { Rectangle } from "../bindings/Rectangle";
-    import { FetchableDevEnvironment } from "vite";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let popUpOnClose: (() => void) | undefined = $state(undefined);
@@ -54,6 +52,12 @@
 
     async function test_actuator_contract() {
         await invoke("actuator_contract");
+    }
+
+    export function closePopUp() {
+        popUpSnippet = undefined;
+        popUpOnClose?.();
+        isPopUpOpen = false;
     }
 
     export function openPopup(snippet: Snippet, onClose?: () => void) {

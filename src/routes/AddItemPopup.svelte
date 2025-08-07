@@ -1,6 +1,6 @@
 <script lang="ts">
     import { scale } from "svelte/transition";
-    import type { DetectObjectResult } from "./+page.svelte";
+    import { closePopUp, type DetectObjectResult } from "./+page.svelte";
     import Numpad from "./Numpad.svelte";
     import Keyboard from "./Keyboard.svelte";
     import type { PrepareAddItemStatus } from "../bindings/PrepareAddItemStatus";
@@ -49,6 +49,7 @@
             rect,
             amount: Number(amount),
         });
+        closePopUp();
     }
 
     let loadingDots: string = $state("");
