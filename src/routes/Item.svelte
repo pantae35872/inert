@@ -27,10 +27,7 @@
             <form class="item-request-form" onsubmit={() => {}}>
                 <h2 class="item-header">Request Item: {item_name}</h2>
                 <div class="image-wrapper">
-                    <img
-                        src={"http://127.0.0.1:5000/images/" + image_source}
-                        alt={item_name}
-                    />
+                    <img src={image_source} alt={item_name} />
                 </div>
 
                 <input

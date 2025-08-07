@@ -44,12 +44,11 @@ impl Database {
         let image_db_2 = image_db.clone();
         tokio::spawn(async move {
             // Route: GET /images/{filename...}
-            let images_route = warp::path("images").and(warp::path::tail()).and_then(
+            let images_route = warp::path("item_images").and(warp::path::tail()).and_then(
                 move |tail: warp::path::Tail| {
                     let base_dir = image_db_2.clone();
                     async move {
                         let full_path = base_dir.join(tail.as_str());
-                        todo!("{}", full_path.display());
 
                         if full_path.exists() && full_path.is_file() {
                             Ok(warp::reply::with_header(
@@ -103,7 +102,7 @@ impl Database {
                 &super::Item {
                     rect,
                     display_name: name.as_ref().to_string(),
-                    image_id: image_name,
+                    image_id: format!("http://127.0.0.1:5000/item_images/{image_name}"),
                 },
             )
             .await
