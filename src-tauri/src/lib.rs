@@ -6,6 +6,7 @@ use std::{
     path::{Path, PathBuf},
     process::Stdio,
     str::FromStr,
+    sync::Arc,
 };
 
 use serde::{Deserialize, Serialize};
@@ -47,9 +48,9 @@ async fn actuator_extend(app: AppHandle) {
 
 #[tauri::command]
 async fn homing(app: AppHandle) {
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     let plane = app.state::<Plane>();
-    let mut plane = plane.get(&backend).await;
+    let mut plane = plane.get(Arc::clone(&backend)).await;
 
     plane.homeing().await;
 }
@@ -65,9 +66,9 @@ enum Direction {
 
 #[tauri::command]
 async fn move_to(app: AppHandle, x: usize, y: usize) {
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     let plane = app.state::<Plane>();
-    let mut plane = plane.get(&backend).await;
+    let mut plane = plane.get(Arc::clone(&backend)).await;
 
     println!("Moving to posisiton: {x}, {y}");
     plane.move_to(x, y).await;
@@ -78,9 +79,9 @@ async fn move_to(app: AppHandle, x: usize, y: usize) {
 #[tauri::command]
 async fn move_by(app: AppHandle, direction: Direction, amount: usize) {
     let amount = amount as isize;
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     let plane = app.state::<Plane>();
-    let mut plane = plane.get(&backend).await;
+    let mut plane = plane.get(Arc::clone(&backend)).await;
     match direction {
         Direction::North => plane.move_with(0, amount).await,
         Direction::South => plane.move_with(0, -amount).await,
@@ -146,8 +147,8 @@ pub fn run() {
             use tauri::Manager;
 
             let (backend, plane, inventory) = tauri::async_runtime::block_on(async {
-                let backend = Backend::new();
-                let plane = Plane::new(&backend).await;
+                let backend = Arc::new(Backend::new());
+                let plane = Plane::new(backend.clone()).await;
                 (backend, plane, Inventory::new().await)
             });
             app.manage(backend);
