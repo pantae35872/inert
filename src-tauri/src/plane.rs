@@ -50,7 +50,7 @@ impl PlaneImpl<'_> {
 
         let mut timeout = 10;
         while let Ok(()) = motor_x
-            .rotate_block(MotorDirection::AntiClockwise, 10)
+            .rotate_block(MotorDirection::AntiClockwise, 100)
             .await
             && timeout > 0
         {
@@ -58,7 +58,7 @@ impl PlaneImpl<'_> {
         }
 
         let mut timeout = 10;
-        while let Ok(()) = motor_y.rotate_block(MotorDirection::Clockwise, 10).await
+        while let Ok(()) = motor_y.rotate_block(MotorDirection::Clockwise, 100).await
             && timeout > 0
         {
             timeout -= 1;
