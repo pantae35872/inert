@@ -1,7 +1,7 @@
 use std::time::{Duration, Instant};
 
 use rppal::gpio::{Level, OutputPin};
-use tokio::time::sleep;
+use tokio::time::{sleep, sleep_until};
 
 use crate::backend::{MotorBackend, MotorDirection, MotorRotation, rpi::busy_wait_us};
 
@@ -20,9 +20,9 @@ impl Drv8825Motor {
         Self {
             step_pin,
             dir_pin,
-            steps_per_turn: 200,
-        } // Steps per turn is 200 with all the M
-        // control pin low
+            steps_per_turn: 3200,
+        } // Steps per turn is 3200 with M2 high and other 
+        // M pin low
     }
 
     #[inline(always)]
@@ -55,17 +55,13 @@ impl Drv8825Motor {
                 for _ in 0..step_back_steps {
                     let wait = self.step_one();
 
-                    while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {
-                        core::hint::spin_loop();
-                    }
+                    motor_delay_async(wait).await;
                 }
 
                 return i - step_back_steps;
             }
 
-            while wait.elapsed() < Duration::from_micros(MOTOR_WAIT_TIME) {
-                core::hint::spin_loop();
-            }
+            motor_delay_async(wait).await;
         }
 
         steps
@@ -78,6 +74,15 @@ impl From<MotorDirection> for Level {
             MotorDirection::Clockwise => Self::Low,
             MotorDirection::AntiClockwise => Self::High,
         }
+    }
+}
+async fn motor_delay_async(wait: Instant) {
+    let target = wait + Duration::from_micros(MOTOR_WAIT_TIME);
+    let now = Instant::now();
+
+    if target > now {
+        let delay = target - now;
+        sleep_until(tokio::time::Instant::now() + delay).await;
     }
 }
 
