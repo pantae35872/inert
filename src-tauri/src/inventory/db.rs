@@ -46,10 +46,11 @@ impl Database {
             // Route: GET /images/{filename...}
             let images_route = warp::path("images").and(warp::path::tail()).and_then(
                 move |tail: warp::path::Tail| {
-                    let base_dir = image_db_2.to_str().unwrap().to_string();
+                    let base_dir = image_db_2.clone();
                     async move {
-                        let full_path = Path::new(&base_dir).join(tail.as_str());
+                        let full_path = base_dir.join(tail.as_str());
 
+                        println!("The fucking path: {}", full_path);
                         if full_path.exists() && full_path.is_file() {
                             Ok(warp::reply::with_header(
                                 tokio::fs::read(full_path)
