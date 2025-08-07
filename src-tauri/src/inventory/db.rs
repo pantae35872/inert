@@ -17,7 +17,7 @@ pub trait Item: Serialize + DeserializeOwned + Send + 'static + Clone {}
 
 impl<T> Item for T where T: Serialize + DeserializeOwned + Send + 'static + Clone {}
 
-mod sqlite;
+pub mod sqlite;
 
 type InventoryDB = InventoryDBImpl<super::Item>;
 
@@ -52,7 +52,7 @@ impl Database {
         amount: usize,
         rect: Rectangle,
         img: Vec<u8>,
-    ) {
+    ) -> i64 {
         let image_name: String = rand::rng()
             .sample_iter(&Alphanumeric)
             .take(64)
@@ -77,7 +77,15 @@ impl Database {
                     image_path: image_path.to_str().unwrap().to_string(),
                 },
             )
-            .await;
+            .await
+    }
+
+    pub async fn remove_item_by_id(&self, id: i64) {
+        self.db.remove_item_by_id(id).await
+    }
+
+    pub async fn find_item_by_id(&self, id: i64) -> StoredItem<super::Item> {
+        self.db.find_item_by_id(id).await
     }
 
     pub async fn find_item_by_name(&self, name: &str) -> Vec<StoredItem<super::Item>> {

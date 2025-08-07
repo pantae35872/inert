@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "bind-gen": "rm -r src/bindings && cd src-tauri && cargo test export_bindings && mv bindings ../src/bindings",
+    "bind-gen": "rm -rf src/bindings && cd src-tauri && cargo test export_bindings && mv bindings ../src/bindings",
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",

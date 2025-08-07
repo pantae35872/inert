@@ -96,19 +96,44 @@ impl<I: Item> InventoryDBImpl<I> {
         }
     }
 
-    pub async fn add_item(&self, name: impl AsRef<str>, amount: usize, item: &I) {
+    pub async fn add_item(&self, name: impl AsRef<str>, amount: usize, item: &I) -> i64 {
         let name = name.as_ref().to_string();
         let json_data = serde_json::to_string(item).expect("Serialization failed");
 
         self.db
             .call(move |conn| {
-                Ok(conn.execute(
-                    "INSERT OR REPLACE INTO items (name, amount, data, img) VALUES (?1, ?2, ?3)",
+                conn.execute(
+                    "INSERT OR REPLACE INTO items (name, amount, data) VALUES (?1, ?2, ?3)",
                     params![name, amount, json_data],
-                )?)
+                )?;
+                let id = conn.last_insert_rowid();
+                Ok(id)
             })
             .await
-            .expect("Failed to save item data");
+            .expect("Failed to save item data")
+    }
+
+    pub async fn remove_item_by_id(&self, id: i64) {
+        self.db
+            .call(move |conn| {
+                conn.execute("DELETE FROM items WHERE id = ?1", params![id])?;
+                Ok(())
+            })
+            .await
+            .expect("Failed to remove item by ID")
+    }
+
+    pub async fn find_item_by_id(&self, id: i64) -> StoredItem<I> {
+        self.db
+            .call(move |conn| {
+                let mut stmt = conn
+                    .prepare("SELECT * FROM items WHERE id = ?1")
+                    .expect("Prepare failed");
+
+                Ok(stmt.query_row(params![id], |row| StoredItem::try_from(row))?)
+            })
+            .await
+            .expect("Find failed")
     }
 
     pub async fn find_item_by_name(&self, name: &str) -> Vec<StoredItem<I>> {

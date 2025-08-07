@@ -23,6 +23,15 @@ impl Plane {
 
         {
             let plane = data.lock().await;
+
+            assert!(
+                plane.width > 100,
+                "Plane width should be more than 100 units"
+            );
+            assert!(
+                plane.height > 100,
+                "Plane width should be more than 100 units"
+            );
             println!(
                 "Plane width: {}, Plane height: {};",
                 plane.width, plane.height
@@ -72,7 +81,7 @@ impl PlaneImpl<'_> {
                 .rotate_block(MotorDirection::Clockwise, MAX_WIDTH)
                 .await
             {
-                Ok(_) => panic!("The plane shouldn't be wider than {} units", MAX_WIDTH),
+                Ok(_) => MAX_WIDTH,
                 Err(ProtectedMotorError::LimitHit { left_over }) => MAX_WIDTH - left_over,
             }
         });
@@ -85,7 +94,7 @@ impl PlaneImpl<'_> {
                 .rotate_block(MotorDirection::AntiClockwise, MAX_HEIGHT)
                 .await
             {
-                Ok(_) => panic!("The plane shouldn't be higher than {} units", MAX_HEIGHT),
+                Ok(_) => MAX_HEIGHT,
                 Err(ProtectedMotorError::LimitHit { left_over }) => MAX_HEIGHT - left_over,
             }
         });
@@ -189,5 +198,15 @@ impl PlaneImpl<'_> {
             y as isize - self.data.cur_y as isize,
         )
         .await;
+    }
+
+    pub fn width(&self) -> usize {
+        assert!(self.data.width != 0, "width called before setup");
+        self.data.width
+    }
+
+    pub fn height(&self) -> usize {
+        assert!(self.data.height != 0, "height called before setup");
+        self.data.width
     }
 }

@@ -11,15 +11,12 @@ pub struct ItemAllocator {
 }
 
 impl ItemAllocator {
-    const WIDTH: usize = 400;
-    const HEIGHT: usize = 400;
-
-    pub async fn new(db: &Database) -> Self {
+    pub async fn new(db: &Database, width: usize, height: usize) -> Self {
         let mut free_list = vec![Rectangle {
             x: 0,
             y: 0,
-            width: Self::WIDTH,
-            height: Self::HEIGHT,
+            width,
+            height,
         }];
 
         let items = db.list_all_items().await;

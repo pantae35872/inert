@@ -3,6 +3,9 @@
     import type { DetectObjectResult } from "./+page.svelte";
     import Numpad from "./Numpad.svelte";
     import Keyboard from "./Keyboard.svelte";
+    import type { PrepareAddItemStatus } from "../bindings/PrepareAddItemStatus";
+    import type { Rectangle } from "../bindings/Rectangle";
+    import { invoke } from "@tauri-apps/api/core";
 
     let {
         camera_url,
@@ -14,6 +17,56 @@
 
     let numpadOn: boolean = $state(false);
     let keyboardOn: boolean = $state(false);
+
+    let prepareItemLoading: boolean = $state(false);
+
+    type Stage = "Preparing" | "Loading" | "Confirming";
+
+    let stage: Stage = $state("Preparing");
+    let rect: Rectangle | undefined = undefined;
+
+    async function addItem() {
+        prepareItemLoading = true;
+
+        startLoadingAnimation();
+        stage = "Loading";
+        let status = await invoke<PrepareAddItemStatus>("prepare_add_item");
+        if (status == "NoSpaceLeft") {
+            console.log("TODO");
+            return;
+        } else if ("Success" in status) {
+            rect = status.Success;
+        }
+
+        prepareItemLoading = false;
+        stopLoadingAnimation();
+        stage = "Confirming";
+    }
+
+    async function confirmAddItem() {
+        await invoke("confirm_add_item", {
+            name: itemNameKeys,
+            rect,
+            amount: Number(amount),
+        });
+    }
+
+    let loadingDots: string = $state("");
+    let interval: number;
+
+    function startLoadingAnimation() {
+        let count = 0;
+
+        interval = setInterval(() => {
+            count = (count + 1) % 4;
+            loadingDots = ".".repeat(count);
+        }, 500); // Change dot every 500ms
+    }
+
+    function stopLoadingAnimation() {
+        clearInterval(interval);
+        loadingDots = "";
+    }
 </script>
 
 <div
@@ -23,50 +76,81 @@
     }}
 >
     <div class="add-item">
-        <form class="add-item-form">
-            <h2 style="font-size: 1rem; margin: 0.1rem;">Add Item</h2>
-            {#if camera_url}
-                <div class="image-wrapper">
-                    <img src={camera_url} alt="Camera Stream" />
-                </div>
-            {/if}
-
-            {#if detected_object}
-                <p style="font-size: 0.8rem; margin: 0; padding: 0;">
-                    {detected_object.name}
-                    {detected_object.percentage}
-                </p>
-            {:else}
-                <p style="font-size: 0.8rem; margin: 0; padding: 0;">
-                    Detecting...
-                </p>
-            {/if}
-            <input
-                class="item-amount-input"
-                placeholder="Detecting... (Item name)"
-                value={itemNameKeys.length == 0
-                    ? detected_object?.name
-                    : itemNameKeys}
-                onclick={() => (keyboardOn = !keyboardOn)}
-                type="text"
-                required
-                readonly
-            />
-            <input
-                class="item-amount-input"
-                placeholder="Amount"
-                type="text"
-                onclick={() => (numpadOn = !numpadOn)}
-                value={amount}
-                required
-                readonly
-            />
-            <button
-                class="button"
-                style="font-size: 0.5rem; width: 84%;"
-                type="submit">Add</button
+        {#if stage == "Preparing"}
+            <div
+                style="margin: 1rem; display: flex; justify-content: center; flex-direction: column; align-items: center;"
             >
-        </form>
+                <h1>Add Item ?</h1>
+                <button class="button" onclick={addItem}>Confirm</button>
+            </div>
+        {:else if stage == "Loading"}
+            <h1>Loading{loadingDots}</h1>
+        {:else if stage == "Confirming"}
+            <form class="add-item-form" onsubmit={confirmAddItem}>
+                <h2 style="font-size: 1rem; margin: 0.1rem;">
+                    Please put your item below the magnetic head
+                </h2>
+                {#if camera_url}
+                    <div class="image-wrapper">
+                        <img src={camera_url} alt="Camera Stream" />
+                    </div>
+                {/if}
+
+                {#if detected_object}
+                    <p style="font-size: 0.8rem; margin: 0; padding: 0;">
+                        {detected_object.name}
+                        {detected_object.percentage}
+                    </p>
+                {:else}
+                    <p style="font-size: 0.8rem; margin: 0; padding: 0;">
+                        Detecting...
+                    </p>
+                {/if}
+                <input
+                    class="item-amount-input"
+                    placeholder="Detecting... (Item name)"
+                    value={itemNameKeys.length == 0
+                        ? detected_object?.name
+                        : itemNameKeys}
+                    onclick={async () => {
+                        if (numpadOn) {
+                            numpadOn = false;
+
+                            await new Promise((resolve) =>
+                                setTimeout(resolve, 350),
+                            );
+                        }
+                        keyboardOn = !keyboardOn;
+                    }}
+                    type="text"
+                    required
+                    readonly
+                />
+                <input
+                    class="item-amount-input"
+                    placeholder="Amount"
+                    type="text"
+                    onclick={async () => {
+                        if (keyboardOn) {
+                            keyboardOn = false;
+
+                            await new Promise((resolve) =>
+                                setTimeout(resolve, 350),
+                            );
+                        }
+                        numpadOn = !numpadOn;
+                    }}
+                    value={amount}
+                    required
+                    readonly
+                />
+                <button
+                    class="button"
+                    style="font-size: 0.5rem; width: 84%;"
+                    type="submit">Add</button
+                >
+            </form>
+        {/if}
     </div>
 
     <Numpad bind:amount {numpadOn} />

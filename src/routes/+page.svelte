@@ -2,12 +2,16 @@
     import Item from "./Item.svelte";
     import "../style.css";
     import Overlay from "./Overlay.svelte";
-    import type { Snippet } from "svelte";
+    import { onMount, type Snippet } from "svelte";
     import { invoke } from "@tauri-apps/api/core";
     import { listen } from "@tauri-apps/api/event";
     import RequestItemQueue from "./RequestItemQueue.svelte";
     import AddItemPopup from "./AddItemPopup.svelte";
     import { type Direction } from "../bindings/Direction";
+    import { type DisplayItem } from "../bindings/DisplayItem";
+    import type { PrepareAddItemStatus } from "../bindings/PrepareAddItemStatus";
+    import type { Rectangle } from "../bindings/Rectangle";
+    import { FetchableDevEnvironment } from "vite";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let popUpOnClose: (() => void) | undefined = $state(undefined);
@@ -89,11 +93,25 @@
         popUpOnClose = undefined;
     }
 
-    const directions: Direction[] = ["North", "South", "East", "West"];
+    let rect: Rectangle | undefined = undefined;
 
-    //function openPopUpItemQueue() {
-    //    openPopup(requestItemQueuePopUp);
-    //}
+    const directions: Direction[] = ["North", "South", "East", "West"];
+</script>
+
+<script lang="ts">
+    let displayItems: DisplayItem[] = $state([]);
+
+    onMount(() => {
+        async function fetch_items() {
+            displayItems = await invoke<DisplayItem[]>("list_items");
+        }
+
+        fetch_items();
+
+        const interval = setInterval(fetch_items, 3000);
+
+        return () => clearInterval(interval);
+    });
 </script>
 
 {#snippet addItemPopup()}
@@ -114,11 +132,6 @@
         <button class="button" style="width: 10rem;" onclick={addItem}
             >Add Item</button
         >
-        <!-- <button
-            class="button"
-            style="width: 15rem;"
-            onclick={openPopUpItemQueue}>Request Queue</button
-        > -->
         <h1 style="text-align: center;">Inventory</h1>
         <button class="button" style="width: 10rem;" onclick={exit}>Exit</button
         >
@@ -159,11 +172,11 @@
         <button class="button" onclick={test_magnet}>Toggle magnet</button>
     </div>
     <div class="items-container" style="padding: 1rem;">
-        {#each Array(100) as _}
+        {#each displayItems as item}
             <Item
-                image_source="https://t3.ftcdn.net/jpg/00/77/77/16/360_F_77771611_BCUZR6NW73NVdiLgmOeIzzSh4RP2U3aV.jpg"
-                item_name="Resistor"
-                item_amount={20}
+                image_source={item.image_path}
+                item_name={item.display_name}
+                item_amount={Number(item.amount)}
             />
         {/each}
     </div>
@@ -174,8 +187,6 @@
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
-
-        justify-content: space-between;
 
         scroll-behavior: smooth;
         overflow-y: auto;

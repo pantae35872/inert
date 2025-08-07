@@ -1,33 +1,128 @@
+use std::{sync::Arc, time::Duration};
+use ts_rs::TS;
+
 use serde::{Deserialize, Serialize};
+use tokio::sync::{Mutex, MutexGuard};
 
 use crate::{
-    backend::{Backend, CameraBackend, CameraFrame},
+    backend::{ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend},
     inventory::{allocator::ItemAllocator, db::Database},
+    plane::Plane,
 };
 
 mod allocator;
 mod db;
 
 #[derive(Debug)]
-pub struct Inventory {
+struct InventoryData {
     db: Database,
     allocator: ItemAllocator,
+}
+
+#[derive(Debug)]
+pub struct Inventory {
+    data: Mutex<InventoryData>,
 }
 
 impl Inventory {
     pub async fn new() -> Self {
         let db = Database::new().await;
-        let allocator = ItemAllocator::new(&db).await;
-        Self { db, allocator }
+        let allocator = ItemAllocator::new(&db, 100, 100).await;
+        let data = Mutex::new(InventoryData { db, allocator });
+
+        Self { data }
     }
 
-    pub async fn add_item(&mut self, backend: &Backend, name: impl AsRef<str>, amount: usize) {
-        let rect = self.allocator.allocate(50, 50).unwrap();
-
-        let frame = backend.camera().await.capture();
-        if let Some(frame) = frame.take().await {
-            self.db.add_item(name, amount, rect, frame).await;
+    pub async fn get<'a>(&'a self, backend: Arc<Backend>, plane: &'a Plane) -> InventoryImpl<'a> {
+        InventoryImpl {
+            backend,
+            plane,
+            data: self.data.lock().await,
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct DisplayItem {
+    id: i64,
+    amount: u64,
+    image_path: String,
+    display_name: String,
+}
+
+pub struct InventoryImpl<'a> {
+    backend: Arc<Backend>,
+    plane: &'a Plane,
+    data: MutexGuard<'a, InventoryData>,
+}
+
+impl<'a> InventoryImpl<'a> {
+    pub async fn remove_item(&mut self, id: i64) {
+        let item = self.data.db.find_item_by_id(id).await;
+
+        let mut plane = self.plane.get(Arc::clone(&self.backend)).await;
+        let mut actuator = self.backend.actuator().await;
+        let mut magnet = self.backend.magnet().await;
+
+        plane.move_to(item.rect.x, item.rect.y).await;
+
+        actuator.extend().await;
+        magnet.set(true).await;
+        actuator.contract().await;
+
+        plane.move_to(plane.width(), plane.height()).await;
+        actuator.extend().await;
+        magnet.set(false).await;
+        actuator.contract().await;
+    }
+
+    pub async fn list_items(&mut self) -> Vec<DisplayItem> {
+        self.data
+            .db
+            .list_all_items()
+            .await
+            .iter()
+            .map(|result| DisplayItem {
+                id: result.id,
+                image_path: result.image_path.clone(),
+                display_name: result.display_name.clone(),
+                amount: result.amount,
+            })
+            .collect()
+    }
+
+    pub async fn prepare_add_item(&mut self) -> Option<Rectangle> {
+        let mut plane = self.plane.get(Arc::clone(&self.backend)).await;
+
+        plane.move_to(plane.width(), plane.height()).await;
+        self.backend.actuator().await.contract().await;
+        self.backend.magnet().await.set(false).await;
+
+        self.data.allocator.allocate(15, 15)
+    }
+
+    pub async fn add_item(&mut self, name: impl AsRef<str>, rect: Rectangle, amount: usize) {
+        let mut plane = self.plane.get(Arc::clone(&self.backend)).await;
+        let mut actuator = self.backend.actuator().await;
+        let mut magnet = self.backend.magnet().await;
+
+        let frame = self.backend.camera().await.capture();
+        if let Some(frame) = frame.take().await {
+            self.data.db.add_item(name, amount, rect, frame).await;
+        }
+
+        actuator.extend().await;
+        magnet.set(true).await;
+        actuator.contract().await;
+
+        tokio::time::sleep(Duration::from_secs(1)).await;
+
+        plane.move_to(rect.x, rect.y).await;
+
+        actuator.extend().await;
+        magnet.set(false).await;
+        actuator.contract().await;
     }
 }
 
@@ -39,7 +134,8 @@ pub struct Item {
     pub display_name: String,
 }
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub struct Rectangle {
     x: usize,
     y: usize,

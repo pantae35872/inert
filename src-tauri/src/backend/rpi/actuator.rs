@@ -24,7 +24,7 @@ impl ActuatorBackend for LinearActuator {
         self.linear_backward.set_low();
 
         self.linear_forward.set_high();
-        sleep(Duration::from_secs(1)).await;
+        sleep(Duration::from_secs(5)).await;
         self.linear_forward.set_low();
     }
 
@@ -32,7 +32,7 @@ impl ActuatorBackend for LinearActuator {
         self.linear_forward.set_low();
 
         self.linear_backward.set_high();
-        sleep(Duration::from_secs(1)).await;
+        sleep(Duration::from_secs(5)).await;
         self.linear_backward.set_low();
     }
 }

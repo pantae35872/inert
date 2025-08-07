@@ -20,13 +20,62 @@ use ts_rs::TS;
 
 use crate::{
     backend::{ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend},
-    inventory::Inventory,
+    inventory::{DisplayItem, Inventory, Rectangle},
     plane::Plane,
 };
 
 mod backend;
 mod inventory;
 mod plane;
+
+#[derive(Serialize, Deserialize, TS)]
+#[ts(export)]
+enum PrepareAddItemStatus {
+    Success(Rectangle),
+    NoSpaceLeft,
+}
+
+#[tauri::command]
+async fn remove_item(app: AppHandle, id: i64) {
+    let inventory = app.state::<Inventory>();
+    let backend = app.state::<Arc<Backend>>();
+    let plane = app.state::<Plane>();
+    let mut inventory = inventory.get(Arc::clone(&backend), &plane).await;
+
+    inventory.remove_item(id).await;
+}
+
+#[tauri::command]
+async fn prepare_add_item(app: AppHandle) -> PrepareAddItemStatus {
+    let inventory = app.state::<Inventory>();
+    let backend = app.state::<Arc<Backend>>();
+    let plane = app.state::<Plane>();
+    let mut inventory = inventory.get(Arc::clone(&backend), &plane).await;
+    match inventory.prepare_add_item().await {
+        Some(rect) => PrepareAddItemStatus::Success(rect),
+        None => return PrepareAddItemStatus::NoSpaceLeft,
+    }
+}
+
+#[tauri::command]
+async fn confirm_add_item(app: AppHandle, name: String, rect: Rectangle, amount: usize) {
+    let inventory = app.state::<Inventory>();
+    let backend = app.state::<Arc<Backend>>();
+    let plane = app.state::<Plane>();
+    let mut inventory = inventory.get(Arc::clone(&backend), &plane).await;
+
+    inventory.add_item(name, rect, amount).await;
+}
+
+#[tauri::command]
+async fn list_items(app: AppHandle) -> Vec<DisplayItem> {
+    let inventory = app.state::<Inventory>();
+    let backend = app.state::<Arc<Backend>>();
+    let plane = app.state::<Plane>();
+    let mut inventory = inventory.get(Arc::clone(&backend), &plane).await;
+
+    inventory.list_items().await
+}
 
 #[tauri::command]
 async fn test_magnet(app: AppHandle, state: bool) {
@@ -224,6 +273,10 @@ pub fn run() {
             move_by,
             move_to,
             homing,
+            list_items,
+            confirm_add_item,
+            prepare_add_item,
+            remove_item,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
