@@ -30,19 +30,19 @@ mod plane;
 
 #[tauri::command]
 async fn test_magnet(app: AppHandle, state: bool) {
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     backend.magnet().await.set(state).await;
 }
 
 #[tauri::command]
 async fn actuator_contract(app: AppHandle) {
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     backend.actuator().await.contract().await;
 }
 
 #[tauri::command]
 async fn actuator_extend(app: AppHandle) {
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     backend.actuator().await.extend().await;
 }
 
@@ -94,14 +94,14 @@ async fn move_by(app: AppHandle, direction: Direction, amount: usize) {
 
 #[tauri::command]
 async fn serve_rpi_cam(app: AppHandle) -> String {
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     let mut camera = backend.camera().await;
     camera.start().await
 }
 
 #[tauri::command]
 async fn stop_rpi_cam(app: AppHandle) {
-    let backend = app.state::<Backend>();
+    let backend = app.state::<Arc<Backend>>();
     let mut camera = backend.camera().await;
     camera.stop().await
 }
@@ -167,7 +167,7 @@ pub fn run() {
 
             // TODO: Move this somewhere else
             tauri::async_runtime::spawn(async move {
-                let backend = handle.state::<Backend>();
+                let backend = handle.state::<Arc<Backend>>();
                 loop {
                     tokio::time::sleep(std::time::Duration::from_secs(3)).await;
 

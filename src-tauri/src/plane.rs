@@ -62,24 +62,32 @@ impl PlaneImpl<'_> {
     pub async fn setup(&mut self) {
         self.homeing().await;
 
+        const MAX_WIDTH: usize = 1000;
+        const MAX_HEIGHT: usize = 1000;
+
         let backend = self.backend.clone();
         let width = tokio::spawn(async move {
             let mut motor_x = backend.motor_x().await;
-            let mut width = 0;
-            while let Ok(()) = motor_x.rotate_block(MotorDirection::Clockwise, 1).await {
-                width += 1;
+            match motor_x
+                .rotate_block(MotorDirection::Clockwise, MAX_WIDTH)
+                .await
+            {
+                Ok(_) => panic!("The plane shouldn't be wider than {} units", MAX_WIDTH),
+                Err(ProtectedMotorError::LimitHit { left_over }) => MAX_WIDTH - left_over,
             }
-            width
         });
 
         let backend = self.backend.clone();
         let height = tokio::spawn(async move {
             let mut motor_y = backend.motor_y().await;
-            let mut height = 0;
-            while let Ok(()) = motor_y.rotate_block(MotorDirection::AntiClockwise, 1).await {
-                height += 1;
+
+            match motor_y
+                .rotate_block(MotorDirection::AntiClockwise, MAX_HEIGHT)
+                .await
+            {
+                Ok(_) => panic!("The plane shouldn't be higher than {} units", MAX_HEIGHT),
+                Err(ProtectedMotorError::LimitHit { left_over }) => MAX_HEIGHT - left_over,
             }
-            height
         });
 
         let (width, height) = join!(width, height);
