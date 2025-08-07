@@ -105,7 +105,7 @@ impl<'a, M: MotorBackend, S: LimitSwitchBackend> ProtectedMotor<'a, M, S> {
             return Ok(());
         }
 
-        const BLOCK_TURN: f32 = 0.25;
+        const BLOCK_TURN: f32 = 0.1;
 
         let rotation_need = MotorRotation {
             turns: BLOCK_TURN * amount as f32,
