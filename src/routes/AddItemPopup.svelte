@@ -44,11 +44,16 @@
     }
 
     async function confirmAddItem() {
+        stage = "Loading";
+
+        startLoadingAnimation();
         await invoke("confirm_add_item", {
             name: itemNameKeys,
             rect,
             amount: Number(amount),
         });
+        stopLoadingAnimation();
+
         closePopUp();
     }
 
