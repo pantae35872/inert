@@ -50,7 +50,7 @@ impl Database {
                     async move {
                         let full_path = base_dir.join(tail.as_str());
 
-                        println!("The fucking path: {}", full_path);
+                        println!("The fucking path: {}", full_path.display());
                         if full_path.exists() && full_path.is_file() {
                             Ok(warp::reply::with_header(
                                 tokio::fs::read(full_path)
