@@ -30,7 +30,7 @@ impl Plane {
             );
             assert!(
                 plane.height > 100,
-                "Plane width should be more than 100 units"
+                "Plane height should be more than 100 units"
             );
             println!(
                 "Plane width: {}, Plane height: {};",
