@@ -71,7 +71,7 @@ impl<'a> InventoryImpl<'a> {
         magnet.set(true).await;
         actuator.contract().await;
 
-        plane.move_to(plane.width(), plane.height()).await;
+        plane.move_to(plane.width(), plane.height() - 10).await;
         actuator.extend().await;
         magnet.set(false).await;
         actuator.contract().await;
