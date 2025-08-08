@@ -1,5 +1,5 @@
 # This is a software for L.I.S project for thailand innovative innovation 2025 
-This use tauri, with svelte frontend and rppal for raspberry pi control, the backend has 2 "backends"
+This use tauri, with svelte frontend and rppal for raspberry pi control, this has 2 "backends",
 simulate (no raspberry pi just log to the console) or rpi (the real one that uses rppal)
 
 Can be ran with 
