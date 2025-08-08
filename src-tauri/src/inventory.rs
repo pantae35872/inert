@@ -25,7 +25,7 @@ pub struct Inventory {
 }
 
 impl Inventory {
-    pub async fn new(plane: &PlaneImpl) -> Self {
+    pub async fn new(plane: &PlaneImpl<'_>) -> Self {
         let db = Database::new().await;
         let allocator = ItemAllocator::new(&db, plane.width(), plane.height()).await;
         let data = Mutex::new(InventoryData { db, allocator });

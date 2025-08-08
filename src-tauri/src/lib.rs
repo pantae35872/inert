@@ -200,7 +200,8 @@ pub fn run() {
                 backend.actuator().await.contract().await;
                 backend.magnet().await.set(false).await;
                 let plane = Plane::new(backend.clone()).await;
-                (backend, plane, Inventory::new().await)
+                let inventory = Inventory::new(&plane.get(backend.clone()).await).await;
+                (backend, plane, inventory)
             });
             app.manage(backend);
             app.manage(plane);
