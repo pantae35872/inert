@@ -29,6 +29,7 @@
 
         stopLoadingAnimation();
         closePopUp();
+        stage = "Requesting";
     }
 
     let loadingDots: string = $state("");
