@@ -97,11 +97,11 @@ impl<'a> InventoryImpl<'a> {
     pub async fn prepare_add_item(&mut self) -> Option<Rectangle> {
         let mut plane = self.plane.get(Arc::clone(&self.backend)).await;
 
-        plane.move_to(plane.width() - 10, plane.height() - 10).await;
+        plane.move_to(plane.width(), plane.height()).await;
         self.backend.actuator().await.extend().await;
         self.backend.magnet().await.set(false).await;
 
-        self.data.allocator.allocate(20, 20)
+        self.data.allocator.allocate(22, 22)
     }
 
     pub async fn add_item(&mut self, name: impl AsRef<str>, rect: Rectangle, amount: usize) {
