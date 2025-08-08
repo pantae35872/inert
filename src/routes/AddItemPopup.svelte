@@ -12,7 +12,7 @@
         detected_object,
     }: { camera_url?: string; detected_object?: DetectObjectResult } = $props();
 
-    let amount: string = $state("");
+    let amount: string = $state("1");
     let itemNameKeys: string = $state("");
 
     let numpadOn: boolean = $state(false);
@@ -20,7 +20,11 @@
 
     let prepareItemLoading: boolean = $state(false);
 
-    type Stage = "Preparing" | "Loading" | "Confirming";
+    let itemName: string | undefined = $derived(
+        itemNameKeys.length == 0 ? detected_object?.name : itemNameKeys,
+    );
+
+    type Stage = "Preparing" | "Loading" | "Confirming" | "Error";
 
     let stage: Stage = $state("Preparing");
     let rect: Rectangle | undefined = undefined;
@@ -43,12 +47,16 @@
         stage = "Confirming";
     }
 
+    function cancel() {
+        closePopUp();
+    }
+
     async function confirmAddItem() {
         stage = "Loading";
 
         startLoadingAnimation();
         await invoke("confirm_add_item", {
-            name: itemNameKeys,
+            name: itemName,
             rect,
             amount: Number(amount),
         });
@@ -87,7 +95,18 @@
                 style="margin: 1rem; display: flex; justify-content: center; flex-direction: column; align-items: center;"
             >
                 <h1>Add Item ?</h1>
-                <button class="button" onclick={addItem}>Confirm</button>
+                <div
+                    style="display: flex; flex-direction: column; align-items: stretch; justify-content: stretch; gap: 0.5rem; width: 100%;"
+                >
+                    <button
+                        style="width: 100%;"
+                        class="button"
+                        onclick={addItem}>Confirm</button
+                    >
+                    <button style="width: 100%;" class="button" onclick={cancel}
+                        >Cancel</button
+                    >
+                </div>
             </div>
         {:else if stage == "Loading"}
             <h1>Loading{loadingDots}</h1>
@@ -115,9 +134,7 @@
                 <input
                     class="item-amount-input"
                     placeholder="Detecting... (Item name)"
-                    value={itemNameKeys.length == 0
-                        ? detected_object?.name
-                        : itemNameKeys}
+                    value={itemName}
                     onclick={async () => {
                         if (numpadOn) {
                             numpadOn = false;

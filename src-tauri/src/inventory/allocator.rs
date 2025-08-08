@@ -25,7 +25,7 @@ impl ItemAllocator {
             let mut new_list = Vec::new();
 
             for space in free_list.drain(..) {
-                let mut split = subtract_rect(&space, &item.data.rect);
+                let mut split = subtract_item(&space, &item.data.rect);
                 new_list.append(&mut split);
             }
 
@@ -137,6 +137,25 @@ impl ItemAllocator {
 
         true
     }
+}
+
+fn subtract_item(space: &Rectangle, item: &Rectangle) -> Vec<Rectangle> {
+    let item_right = item.x + item.width;
+    let item_bottom = item.y + item.height;
+    let space_right = space.x + space.width;
+    let space_bottom = space.y + space.height;
+
+    // Check if they intersect
+    if item.x >= space_right
+        || item_right <= space.x
+        || item.y >= space_bottom
+        || item_bottom <= space.y
+    {
+        // No intersection, return the original space
+        return vec![space.clone()];
+    }
+
+    return subtract_rect(space, item);
 }
 
 /// Subtracts `sub` from `rect`, returns the list of remaining rectangles

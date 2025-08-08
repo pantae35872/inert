@@ -3,11 +3,21 @@
 
     let {
         open = $bindable(),
+        isCloseable = $bindable(),
         onClose,
         children,
-    }: { open: boolean; onClose?: () => void; children: Snippet } = $props();
+    }: {
+        open: boolean;
+        isCloseable: boolean;
+        onClose?: () => void;
+        children: Snippet;
+    } = $props();
 
     function closeHandler() {
+        if (!isCloseable) {
+            return;
+        }
+
         open = false;
         onClose?.();
     }
