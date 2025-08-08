@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use directories_next::ProjectDirs;
 use rand::{Rng, distr::Alphanumeric};

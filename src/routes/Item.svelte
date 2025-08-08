@@ -1,19 +1,56 @@
 <script lang="ts">
     import { scale } from "svelte/transition";
-    import { openPopup } from "./+page.svelte";
+    import { closePopUp, openPopup } from "./+page.svelte";
     import Numpad from "./Numpad.svelte";
+    import { invoke } from "@tauri-apps/api/core";
 
     let {
         item_name,
         item_amount,
         image_source,
-    }: { item_name: string; item_amount: number; image_source: string } =
-        $props();
+        item_id,
+    }: {
+        item_name: string;
+        item_amount: number;
+        image_source: string;
+        item_id: number;
+    } = $props();
 
-    let amount: string = $state("");
-    let numpadOn: boolean = $state(false);
+    type Stage = "Requesting" | "Loading";
 
-    let left_amount = $derived(item_amount - Number(amount));
+    let stage: Stage = $state("Requesting");
+
+    async function requestItem() {
+        startLoadingAnimation();
+        stage = "Loading";
+        await invoke("remove_item", {
+            id: item_id,
+        });
+
+        stopLoadingAnimation();
+        closePopUp();
+    }
+
+    let loadingDots: string = $state("");
+    let interval: number;
+
+    function startLoadingAnimation() {
+        let count = 0;
+
+        interval = setInterval(() => {
+            count = (count + 1) % 4;
+            loadingDots = ".".repeat(count);
+        }, 500); // Change dot every 500ms
+    }
+
+    function stopLoadingAnimation() {
+        clearInterval(interval);
+        loadingDots = "";
+    }
+
+    function cancel() {
+        closePopUp();
+    }
 </script>
 
 {#snippet requestPopUp()}
@@ -24,34 +61,28 @@
         }}
     >
         <div class="item-request-popup">
-            <form class="item-request-form" onsubmit={() => {}}>
-                <h2 class="item-header">Request Item: {item_name}</h2>
-                <div class="image-wrapper">
-                    <img src={image_source} alt={item_name} />
-                </div>
+            {#if stage == "Requesting"}
+                <form class="item-request-form" onsubmit={requestItem}>
+                    <h2 class="item-header">
+                        Request Item: {item_name}, ({item_amount} items)
+                    </h2>
+                    <div class="image-wrapper">
+                        <img src={image_source} alt={item_name} />
+                    </div>
 
-                <input
-                    class="item-amount-input"
-                    placeholder="Amount"
-                    type="text"
-                    onclick={() => (numpadOn = !numpadOn)}
-                    value={amount}
-                    required
-                    readonly
-                />
-                <h1
-                    class="item-amount-popup"
-                    style="color: {left_amount < 0 ? 'red' : 'inherit'};"
-                >
-                    {left_amount} left
-                </h1>
-                <button class="button item-button" type="submit"
-                    >Confirm Request</button
-                >
-            </form>
+                    <button class="button item-button" type="submit"
+                        >Confirm Request</button
+                    >
+                    <button
+                        class="button item-button"
+                        onclick={closePopUp}
+                        type="reset">Cancel</button
+                    >
+                </form>
+            {:else if stage == "Loading"}
+                <h1>Loading{loadingDots}</h1>
+            {/if}
         </div>
-
-        <Numpad bind:amount {numpadOn} />
     </div>
 {/snippet}
 
@@ -65,10 +96,9 @@
     <button
         class="button"
         style="margin-bottom: 2rem;"
-        onclick={() => openPopup(requestPopUp)}>Request</button
+        onclick={() => openPopup(requestPopUp, () => {}, false)}>Request</button
     >
-
-    <div class="item-amount">has {item_amount} left</div>
+    <div class="item-amount">has {item_amount} items</div>
 </div>
 
 <style>
@@ -153,24 +183,6 @@
         margin: 0;
     }
 
-    .item-amount-input {
-        outline: none;
-        border-radius: 0.31rem;
-        border: 2px solid var(--border-color);
-        background-color: var(--bg-color);
-        color: var(--fg-color-2);
-        padding: 0 1.25rem 0 3.12rem;
-        font-size: 1.06rem;
-        transition: 0.2s ease;
-
-        padding: 0.5rem;
-        margin: 0.1rem;
-    }
-
-    .item-amount-input::placeholder {
-        color: var(--fg-color-2);
-    }
-
     .image-wrapper {
         flex: 1 1 auto;
         overflow: hidden;
@@ -185,12 +197,5 @@
         object-fit: contain;
 
         border-radius: 0.31rem;
-    }
-
-    .item-amount-popup {
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin: 0;
     }
 </style>

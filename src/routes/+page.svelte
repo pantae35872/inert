@@ -34,10 +34,15 @@
         isPopUpOpen = false;
     }
 
-    export function openPopup(snippet: Snippet, onClose?: () => void) {
+    export function openPopup(
+        snippet: Snippet,
+        onClose?: () => void,
+        closeable: boolean = true,
+    ) {
         popUpSnippet = snippet;
         popUpOnClose = onClose;
         isPopUpOpen = true;
+        isCloseable = closeable;
     }
 
     async function exit() {
@@ -101,6 +106,7 @@
                 image_source={item.image_path}
                 item_name={item.display_name}
                 item_amount={Number(item.amount)}
+                item_id={Number(item.id)}
             />
         {/each}
     </div>

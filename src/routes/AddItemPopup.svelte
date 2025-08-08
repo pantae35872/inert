@@ -27,7 +27,11 @@
     type Stage = "Preparing" | "Loading" | "Confirming" | "Error";
 
     let stage: Stage = $state("Preparing");
+
     let rect: Rectangle | undefined = undefined;
+
+    let error: string | undefined = $state(undefined);
+    let message: string | undefined = $state(undefined);
 
     async function addItem() {
         prepareItemLoading = true;
@@ -36,7 +40,9 @@
         stage = "Loading";
         let status = await invoke<PrepareAddItemStatus>("prepare_add_item");
         if (status == "NoSpaceLeft") {
-            console.log("TODO");
+            stage = "Error";
+            error = "No slot left avaiable for the item";
+
             return;
         } else if ("Success" in status) {
             rect = status.Success;
@@ -52,6 +58,13 @@
     }
 
     async function confirmAddItem() {
+        if (itemName == undefined) {
+            message = "Please input the item name before you continue";
+            return;
+        }
+
+        message = undefined;
+
         stage = "Loading";
 
         startLoadingAnimation();
@@ -169,10 +182,35 @@
                 />
                 <button
                     class="button"
-                    style="font-size: 0.5rem; width: 84%;"
+                    style="font-size: 0.7rem; width: 84%;"
                     type="submit">Add</button
                 >
             </form>
+        {:else if stage == "Error"}
+            <div
+                style="margin: 1rem; display: flex; justify-content: center; flex-direction: column; align-items: center;"
+            >
+                {#if error}
+                    <h1 style="color: red;">
+                        An error has occured while adding item: {error}
+                    </h1>
+                {:else}
+                    <h1 style="color: red;">
+                        An error has occured while adding item
+                    </h1>
+                {/if}
+
+                <button
+                    class="button"
+                    style="font-size: 0.5rem; width: 84%;"
+                    onclick={closePopUp}>Ok</button
+                >
+            </div>
+        {/if}
+        {#if message}
+            <h4 style="color: red; margin: 0; padding: 0; text-align: center;">
+                {message}
+            </h4>
         {/if}
     </div>
 

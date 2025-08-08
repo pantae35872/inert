@@ -75,6 +75,8 @@ impl<'a> InventoryImpl<'a> {
         actuator.extend().await;
         magnet.set(false).await;
         actuator.contract().await;
+
+        self.data.db.remove_item_by_id(id).await;
     }
 
     pub async fn list_items(&mut self) -> Vec<DisplayItem> {
