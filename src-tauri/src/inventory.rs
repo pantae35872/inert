@@ -7,7 +7,7 @@ use tokio::sync::{Mutex, MutexGuard};
 use crate::{
     backend::{ActuatorBackend, Backend, CameraBackend, CameraFrame, MagnetBackend},
     inventory::{allocator::ItemAllocator, db::Database},
-    plane::Plane,
+    plane::{Plane, PlaneImpl},
 };
 
 mod allocator;
@@ -25,9 +25,9 @@ pub struct Inventory {
 }
 
 impl Inventory {
-    pub async fn new() -> Self {
+    pub async fn new(plane: &PlaneImpl) -> Self {
         let db = Database::new().await;
-        let allocator = ItemAllocator::new(&db, 100, 100).await;
+        let allocator = ItemAllocator::new(&db, plane.width(), plane.height()).await;
         let data = Mutex::new(InventoryData { db, allocator });
 
         Self { data }
@@ -101,7 +101,7 @@ impl<'a> InventoryImpl<'a> {
         self.backend.actuator().await.extend().await;
         self.backend.magnet().await.set(false).await;
 
-        self.data.allocator.allocate(15, 15)
+        self.data.allocator.allocate(20, 20)
     }
 
     pub async fn add_item(&mut self, name: impl AsRef<str>, rect: Rectangle, amount: usize) {
