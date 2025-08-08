@@ -45,7 +45,7 @@ impl ItemAllocator {
 
     pub fn deallocate(&mut self, rect: Rectangle) {
         // TODO: VERIFY?
-        self.free_list.push(rect.into());
+        self.free_list.insert(0, rect.into());
     }
 
     /// Allocate a new area and returns the x y position

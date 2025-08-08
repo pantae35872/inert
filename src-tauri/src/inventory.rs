@@ -77,6 +77,7 @@ impl<'a> InventoryImpl<'a> {
         actuator.contract().await;
 
         self.data.db.remove_item_by_id(id).await;
+        self.data.allocator.deallocate(item.rect);
     }
 
     pub async fn list_items(&mut self) -> Vec<DisplayItem> {
