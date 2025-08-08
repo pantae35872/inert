@@ -97,9 +97,7 @@ impl<'a> InventoryImpl<'a> {
     pub async fn prepare_add_item(&mut self) -> Option<Rectangle> {
         let mut plane = self.plane.get(Arc::clone(&self.backend)).await;
 
-        plane.move_to(plane.width(), plane.height()).await;
-        self.backend.actuator().await.extend().await;
-        self.backend.magnet().await.set(false).await;
+        plane.move_to(plane.width(), plane.height() - 10).await;
 
         self.data.allocator.allocate(22, 22)
     }
@@ -114,6 +112,7 @@ impl<'a> InventoryImpl<'a> {
             self.data.db.add_item(name, amount, rect, frame).await;
         }
 
+        actuator.extend().await;
         magnet.set(true).await;
         actuator.contract().await;
 
