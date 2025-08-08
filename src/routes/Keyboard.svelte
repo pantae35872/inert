@@ -23,7 +23,8 @@
     let {
         keys = $bindable(),
         keyboardOn,
-    }: { keys: string; keyboardOn: boolean } = $props();
+        closeBtn = true,
+    }: { keys: string; keyboardOn: boolean; closeBtn?: boolean } = $props();
 
     function appendChar(char: string) {
         keys += caps ? char.toUpperCase() : char.toLowerCase();
@@ -66,7 +67,11 @@
                 <button onclick={deleteLast}>⌫</button>
             </div>
         </div>
-        <button class="button" onclick={() => (keyboardOn = false)}>X</button>
+        {#if closeBtn}
+            <button class="button" onclick={() => (keyboardOn = false)}
+                >X</button
+            >
+        {/if}
     </div>
 {/if}
 

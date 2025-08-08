@@ -7,6 +7,8 @@
     import { listen } from "@tauri-apps/api/event";
     import AddItemPopup from "./AddItemPopup.svelte";
     import { type DisplayItem } from "../bindings/DisplayItem";
+    import Keyboard from "./Keyboard.svelte";
+    import { scale } from "svelte/transition";
 
     let popUpSnippet: Snippet | undefined = $state(undefined);
     let popUpOnClose: (() => void) | undefined = $state(undefined);
@@ -66,11 +68,22 @@
 </script>
 
 <script lang="ts">
-    let displayItems: DisplayItem[] = $state([]);
+    let allDisplayItems: DisplayItem[] = $state([]);
+    let search_keys: string = $state("");
+    let displayItems = $derived(
+        search_keys.length == 0
+            ? allDisplayItems
+            : allDisplayItems.filter((item) => {
+                  let res = item.display_name
+                      .toLowerCase()
+                      .includes(search_keys.toLowerCase());
+                  return res;
+              }),
+    );
 
     onMount(() => {
         async function fetch_items() {
-            displayItems = await invoke<DisplayItem[]>("list_items");
+            allDisplayItems = await invoke<DisplayItem[]>("list_items");
         }
 
         fetch_items();
@@ -85,6 +98,24 @@
     <AddItemPopup {camera_url} {detected_object} />
 {/snippet}
 
+{#snippet keyboard()}
+    <div
+        transition:scale={{
+            duration: 200,
+        }}
+        style="display: flex; flex-direction: column; gap: 0.2rem; align-items: center; justify-content: center;"
+    >
+        <input
+            class="search-input"
+            style="width: 90%; margin-left: 1.4rem;"
+            type="text"
+            value={search_keys}
+            readonly
+        />
+        <Keyboard bind:keys={search_keys} keyboardOn={true} closeBtn={false} />
+    </div>
+{/snippet}
+
 <main class="container no-select">
     <Overlay bind:open={isPopUpOpen} onClose={onPopUpClose} bind:isCloseable>
         {@render popUpSnippet?.()}
@@ -95,7 +126,14 @@
         <button class="button" style="width: 10rem;" onclick={addItem}
             >Add Item</button
         >
-        <h1 style="text-align: center;">Inventory</h1>
+        <input
+            class="search-input"
+            type="text"
+            onclick={() => openPopup(keyboard)}
+            placeholder="Search inventory: "
+            value={search_keys}
+            readonly
+        />
         <button class="button" style="width: 10rem;" onclick={exit}>Exit</button
         >
     </div>
@@ -120,5 +158,24 @@
 
         scroll-behavior: smooth;
         overflow-y: auto;
+    }
+
+    .search-input {
+        outline: none;
+        border-radius: 0.31rem;
+        border: 2px solid var(--border-color);
+        background-color: var(--bg-color);
+        color: var(--fg-color-2);
+        font-size: 0.8rem;
+        transition: 0.2s ease;
+
+        padding: 0.8rem;
+        margin: 0.3rem;
+
+        width: 80%;
+    }
+
+    .search-input::placeholder {
+        color: var(--fg-color-2);
     }
 </style>
