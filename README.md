@@ -2,12 +2,11 @@
 This use tauri, with svelte frontend and rppal for raspberry pi control, this has 2 "backends",
 simulate (no raspberry pi just log to the console) or rpi (the real one that uses rppal)
 
-Can be ran with 
+Simulation can be ran with 
 ```bash 
 RPI_RECOGNITION_PATH="$PWD/rpi-recognition" npm run tauri dev -- -- --no-default-features --features sim
 ```
-for simulation
-and a normal default features for rpi
+and a normal default features for rpi can be run with
 ```
 RPI_RECOGNITION_PATH="$PWD/rpi-recognition" npm run tauri dev
 ```
