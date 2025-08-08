@@ -61,8 +61,8 @@
             duration: 200,
         }}
     >
-        <div class="item-request-popup">
-            {#if stage == "Requesting"}
+        {#if stage == "Requesting"}
+            <div class="item-request-popup">
                 <form class="item-request-form" onsubmit={requestItem}>
                     <h2 class="item-header">
                         Request Item: {item_name}, ({item_amount} items)
@@ -80,10 +80,12 @@
                         type="reset">Cancel</button
                     >
                 </form>
-            {:else if stage == "Loading"}
-                <h1>Loading{loadingDots}</h1>
-            {/if}
-        </div>
+            </div>
+        {:else if stage == "Loading"}
+            <div class="item-request-loading">
+                <h1 style="text-align: center;">Loading{loadingDots}</h1>
+            </div>
+        {/if}
     </div>
 {/snippet}
 
@@ -198,5 +200,21 @@
         object-fit: contain;
 
         border-radius: 0.31rem;
+    }
+
+    .item-request-loading {
+        background-color: var(--bg-color-3);
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 2px var(--bg-color-2);
+
+        display: flex;
+        flex-direction: column;
+        overflow: auto; /* Prevent child overflow */
+
+        transition: transform 0.2s ease;
+
+        min-width: 15rem;
     }
 </style>
