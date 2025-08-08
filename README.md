@@ -1,7 +1,26 @@
-# Tauri + SvelteKit + TypeScript
+# This is a software for L.I.S project for thailand innovative innovation 2025 
+This use tauri, with svelte frontend and rppal for raspberry pi control, the backend has 2 "backends"
+simulate (no raspberry pi just log to the console) or rpi (the real one that uses rppal)
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+Can be ran with 
+```bash 
+RPI_RECOGNITION_PATH="$PWD/rpi-recognition" npm run tauri dev -- -- --no-default-features --features sim
+```
+for simulation
+and a normal default features for rpi
+```
+RPI_RECOGNITION_PATH="$PWD/rpi-recognition" npm run tauri dev
+```
 
-## Recommended IDE Setup
+# Setting up
+```bash
+git clone https://github.com/pantae35872/inert.git
+cd inert
+npm install
+cd rpi-recognition
+python -m venv venv
+./venv/pip -r requirements.txt
+cd ../
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
+RPI_RECOGNITION_PATH="$PWD/rpi-recognition" npm run tauri dev # See the first section for more info
+```
