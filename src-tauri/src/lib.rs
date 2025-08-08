@@ -197,6 +197,8 @@ pub fn run() {
 
             let (backend, plane, inventory) = tauri::async_runtime::block_on(async {
                 let backend = Arc::new(Backend::new());
+                backend.actuator().await.contract().await;
+                backend.magnet().await.set(false).await;
                 let plane = Plane::new(backend.clone()).await;
                 (backend, plane, Inventory::new().await)
             });
