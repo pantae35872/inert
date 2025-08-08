@@ -207,6 +207,6 @@ impl PlaneImpl<'_> {
 
     pub fn height(&self) -> usize {
         assert!(self.data.height != 0, "height called before setup");
-        self.data.width
+        self.data.height
     }
 }
